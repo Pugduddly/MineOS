@@ -1,0 +1,222 @@
+--[[
+    The following sequence of bits...
+	   ... speak fluent latin.
+
+	You are free to do with them whatever you want.
+]]
+--[[
+
+	Some functions that do bitwise operations in pure lua.
+	They assume unsigned 32 bit integers for all parameters.
+
+	AND, OR and XOR are unrolled into one big statement because it seems to be
+	one of the faster ways to do this operation. This probably depends on how
+	Lua was compiled and on what system it is running on.
+
+
+	Function list:
+
+	bit_lua.band(int1, int2, int3, ...)
+	bit_lua.bor(int1, int2, int3, ...)
+	bit_lua.bxor(int1, int2, int3, ...)
+	bit_lua.bxor8(byte1, byte2, byte3, ...)
+	bit_lua.bnot(int)
+	bit_lua.bnot8(byte)
+	bit_lua.lshift(int, by)
+	bit_lua.rshift(int, by)
+	bit_lua.arshift(int, by)
+	bit_lua.lrotate(int, by)
+	bit_lua.rrotate(int, by)
+
+]]
+
+
+local POW31 = 2^31
+local POW32 = 2^32
+
+
+local bit_lua = {}
+
+if _G.bit then
+	assert(type(bit) == "table", "'bit' not a table.")
+else
+	_G.bit = {}
+end
+
+if _G.bit.lua then
+	assert(type(bit.lua) == "table", "'bit.lua' not a table.")
+else
+	_G.bit.lua = bit_lua
+end
+
+
+bit_lua.band = function(int1, int2, int3, ...)
+	local ret =
+	((int1%0x00000002>=0x00000001 and int2%0x00000002>=0x00000001 and 0x00000001) or 0)+
+	((int1%0x00000004>=0x00000002 and int2%0x00000004>=0x00000002 and 0x00000002) or 0)+
+	((int1%0x00000008>=0x00000004 and int2%0x00000008>=0x00000004 and 0x00000004) or 0)+
+	((int1%0x00000010>=0x00000008 and int2%0x00000010>=0x00000008 and 0x00000008) or 0)+
+	((int1%0x00000020>=0x00000010 and int2%0x00000020>=0x00000010 and 0x00000010) or 0)+
+	((int1%0x00000040>=0x00000020 and int2%0x00000040>=0x00000020 and 0x00000020) or 0)+
+	((int1%0x00000080>=0x00000040 and int2%0x00000080>=0x00000040 and 0x00000040) or 0)+
+	((int1%0x00000100>=0x00000080 and int2%0x00000100>=0x00000080 and 0x00000080) or 0)+
+	((int1%0x00000200>=0x00000100 and int2%0x00000200>=0x00000100 and 0x00000100) or 0)+
+	((int1%0x00000400>=0x00000200 and int2%0x00000400>=0x00000200 and 0x00000200) or 0)+
+	((int1%0x00000800>=0x00000400 and int2%0x00000800>=0x00000400 and 0x00000400) or 0)+
+	((int1%0x00001000>=0x00000800 and int2%0x00001000>=0x00000800 and 0x00000800) or 0)+
+	((int1%0x00002000>=0x00001000 and int2%0x00002000>=0x00001000 and 0x00001000) or 0)+
+	((int1%0x00004000>=0x00002000 and int2%0x00004000>=0x00002000 and 0x00002000) or 0)+
+	((int1%0x00008000>=0x00004000 and int2%0x00008000>=0x00004000 and 0x00004000) or 0)+
+	((int1%0x00010000>=0x00008000 and int2%0x00010000>=0x00008000 and 0x00008000) or 0)+
+	((int1%0x00020000>=0x00010000 and int2%0x00020000>=0x00010000 and 0x00010000) or 0)+
+	((int1%0x00040000>=0x00020000 and int2%0x00040000>=0x00020000 and 0x00020000) or 0)+
+	((int1%0x00080000>=0x00040000 and int2%0x00080000>=0x00040000 and 0x00040000) or 0)+
+	((int1%0x00100000>=0x00080000 and int2%0x00100000>=0x00080000 and 0x00080000) or 0)+
+	((int1%0x00200000>=0x00100000 and int2%0x00200000>=0x00100000 and 0x00100000) or 0)+
+	((int1%0x00400000>=0x00200000 and int2%0x00400000>=0x00200000 and 0x00200000) or 0)+
+	((int1%0x00800000>=0x00400000 and int2%0x00800000>=0x00400000 and 0x00400000) or 0)+
+	((int1%0x01000000>=0x00800000 and int2%0x01000000>=0x00800000 and 0x00800000) or 0)+
+	((int1%0x02000000>=0x01000000 and int2%0x02000000>=0x01000000 and 0x01000000) or 0)+
+	((int1%0x04000000>=0x02000000 and int2%0x04000000>=0x02000000 and 0x02000000) or 0)+
+	((int1%0x08000000>=0x04000000 and int2%0x08000000>=0x04000000 and 0x04000000) or 0)+
+	((int1%0x10000000>=0x08000000 and int2%0x10000000>=0x08000000 and 0x08000000) or 0)+
+	((int1%0x20000000>=0x10000000 and int2%0x20000000>=0x10000000 and 0x10000000) or 0)+
+	((int1%0x40000000>=0x20000000 and int2%0x40000000>=0x20000000 and 0x20000000) or 0)+
+	((int1%0x80000000>=0x40000000 and int2%0x80000000>=0x40000000 and 0x40000000) or 0)+
+	((int1>=0x80000000 and int2>=0x80000000 and 0x80000000) or 0 )
+
+	return (int3 and bit_lua.band(ret, int3, ...)) or ret
+end
+
+
+bit_lua.bor = function(int1, int2, int3, ...)
+	local ret =
+	(((int1%0x00000002>=0x00000001 or (int2%0x00000002>=0x00000001)) and 0x00000001) or 0)+
+	(((int1%0x00000004>=0x00000002 or (int2%0x00000004>=0x00000002)) and 0x00000002) or 0)+
+	(((int1%0x00000008>=0x00000004 or (int2%0x00000008>=0x00000004)) and 0x00000004) or 0)+
+	(((int1%0x00000010>=0x00000008 or (int2%0x00000010>=0x00000008)) and 0x00000008) or 0)+
+	(((int1%0x00000020>=0x00000010 or (int2%0x00000020>=0x00000010)) and 0x00000010) or 0)+
+	(((int1%0x00000040>=0x00000020 or (int2%0x00000040>=0x00000020)) and 0x00000020) or 0)+
+	(((int1%0x00000080>=0x00000040 or (int2%0x00000080>=0x00000040)) and 0x00000040) or 0)+
+	(((int1%0x00000100>=0x00000080 or (int2%0x00000100>=0x00000080)) and 0x00000080) or 0)+
+	(((int1%0x00000200>=0x00000100 or (int2%0x00000200>=0x00000100)) and 0x00000100) or 0)+
+	(((int1%0x00000400>=0x00000200 or (int2%0x00000400>=0x00000200)) and 0x00000200) or 0)+
+	(((int1%0x00000800>=0x00000400 or (int2%0x00000800>=0x00000400)) and 0x00000400) or 0)+
+	(((int1%0x00001000>=0x00000800 or (int2%0x00001000>=0x00000800)) and 0x00000800) or 0)+
+	(((int1%0x00002000>=0x00001000 or (int2%0x00002000>=0x00001000)) and 0x00001000) or 0)+
+	(((int1%0x00004000>=0x00002000 or (int2%0x00004000>=0x00002000)) and 0x00002000) or 0)+
+	(((int1%0x00008000>=0x00004000 or (int2%0x00008000>=0x00004000)) and 0x00004000) or 0)+
+	(((int1%0x00010000>=0x00008000 or (int2%0x00010000>=0x00008000)) and 0x00008000) or 0)+
+	(((int1%0x00020000>=0x00010000 or (int2%0x00020000>=0x00010000)) and 0x00010000) or 0)+
+	(((int1%0x00040000>=0x00020000 or (int2%0x00040000>=0x00020000)) and 0x00020000) or 0)+
+	(((int1%0x00080000>=0x00040000 or (int2%0x00080000>=0x00040000)) and 0x00040000) or 0)+
+	(((int1%0x00100000>=0x00080000 or (int2%0x00100000>=0x00080000)) and 0x00080000) or 0)+
+	(((int1%0x00200000>=0x00100000 or (int2%0x00200000>=0x00100000)) and 0x00100000) or 0)+
+	(((int1%0x00400000>=0x00200000 or (int2%0x00400000>=0x00200000)) and 0x00200000) or 0)+
+	(((int1%0x00800000>=0x00400000 or (int2%0x00800000>=0x00400000)) and 0x00400000) or 0)+
+	(((int1%0x01000000>=0x00800000 or (int2%0x01000000>=0x00800000)) and 0x00800000) or 0)+
+	(((int1%0x02000000>=0x01000000 or (int2%0x02000000>=0x01000000)) and 0x01000000) or 0)+
+	(((int1%0x04000000>=0x02000000 or (int2%0x04000000>=0x02000000)) and 0x02000000) or 0)+
+	(((int1%0x08000000>=0x04000000 or (int2%0x08000000>=0x04000000)) and 0x04000000) or 0)+
+	(((int1%0x10000000>=0x08000000 or (int2%0x10000000>=0x08000000)) and 0x08000000) or 0)+
+	(((int1%0x20000000>=0x10000000 or (int2%0x20000000>=0x10000000)) and 0x10000000) or 0)+
+	(((int1%0x40000000>=0x20000000 or (int2%0x40000000>=0x20000000)) and 0x20000000) or 0)+
+	(((int1%0x80000000>=0x40000000 or (int2%0x80000000>=0x40000000)) and 0x40000000) or 0)+
+	(((int1>=0x80000000 or (int2>=0x80000000)) and 0x80000000) or 0 )
+
+	return (int3 and bit_lua.bor(ret, int3, ...)) or ret
+end
+
+
+bit_lua.bxor = function(int1, int2, int3, ...)
+	local ret =
+	((int1%0x00000002>=0x00000001 ~= (int2%0x00000002>=0x00000001) and 0x00000001) or 0)+
+	((int1%0x00000004>=0x00000002 ~= (int2%0x00000004>=0x00000002) and 0x00000002) or 0)+
+	((int1%0x00000008>=0x00000004 ~= (int2%0x00000008>=0x00000004) and 0x00000004) or 0)+
+	((int1%0x00000010>=0x00000008 ~= (int2%0x00000010>=0x00000008) and 0x00000008) or 0)+
+	((int1%0x00000020>=0x00000010 ~= (int2%0x00000020>=0x00000010) and 0x00000010) or 0)+
+	((int1%0x00000040>=0x00000020 ~= (int2%0x00000040>=0x00000020) and 0x00000020) or 0)+
+	((int1%0x00000080>=0x00000040 ~= (int2%0x00000080>=0x00000040) and 0x00000040) or 0)+
+	((int1%0x00000100>=0x00000080 ~= (int2%0x00000100>=0x00000080) and 0x00000080) or 0)+
+	((int1%0x00000200>=0x00000100 ~= (int2%0x00000200>=0x00000100) and 0x00000100) or 0)+
+	((int1%0x00000400>=0x00000200 ~= (int2%0x00000400>=0x00000200) and 0x00000200) or 0)+
+	((int1%0x00000800>=0x00000400 ~= (int2%0x00000800>=0x00000400) and 0x00000400) or 0)+
+	((int1%0x00001000>=0x00000800 ~= (int2%0x00001000>=0x00000800) and 0x00000800) or 0)+
+	((int1%0x00002000>=0x00001000 ~= (int2%0x00002000>=0x00001000) and 0x00001000) or 0)+
+	((int1%0x00004000>=0x00002000 ~= (int2%0x00004000>=0x00002000) and 0x00002000) or 0)+
+	((int1%0x00008000>=0x00004000 ~= (int2%0x00008000>=0x00004000) and 0x00004000) or 0)+
+	((int1%0x00010000>=0x00008000 ~= (int2%0x00010000>=0x00008000) and 0x00008000) or 0)+
+	((int1%0x00020000>=0x00010000 ~= (int2%0x00020000>=0x00010000) and 0x00010000) or 0)+
+	((int1%0x00040000>=0x00020000 ~= (int2%0x00040000>=0x00020000) and 0x00020000) or 0)+
+	((int1%0x00080000>=0x00040000 ~= (int2%0x00080000>=0x00040000) and 0x00040000) or 0)+
+	((int1%0x00100000>=0x00080000 ~= (int2%0x00100000>=0x00080000) and 0x00080000) or 0)+
+	((int1%0x00200000>=0x00100000 ~= (int2%0x00200000>=0x00100000) and 0x00100000) or 0)+
+	((int1%0x00400000>=0x00200000 ~= (int2%0x00400000>=0x00200000) and 0x00200000) or 0)+
+	((int1%0x00800000>=0x00400000 ~= (int2%0x00800000>=0x00400000) and 0x00400000) or 0)+
+	((int1%0x01000000>=0x00800000 ~= (int2%0x01000000>=0x00800000) and 0x00800000) or 0)+
+	((int1%0x02000000>=0x01000000 ~= (int2%0x02000000>=0x01000000) and 0x01000000) or 0)+
+	((int1%0x04000000>=0x02000000 ~= (int2%0x04000000>=0x02000000) and 0x02000000) or 0)+
+	((int1%0x08000000>=0x04000000 ~= (int2%0x08000000>=0x04000000) and 0x04000000) or 0)+
+	((int1%0x10000000>=0x08000000 ~= (int2%0x10000000>=0x08000000) and 0x08000000) or 0)+
+	((int1%0x20000000>=0x10000000 ~= (int2%0x20000000>=0x10000000) and 0x10000000) or 0)+
+	((int1%0x40000000>=0x20000000 ~= (int2%0x40000000>=0x20000000) and 0x20000000) or 0)+
+	((int1%0x80000000>=0x40000000 ~= (int2%0x80000000>=0x40000000) and 0x40000000) or 0)+
+	((int1>=0x80000000 ~= (int2>=0x80000000) and 0x80000000) or 0 )
+
+	return (int3 and bit_lua.bxor(ret, int3, ...)) or ret
+end
+
+bit_lua.bxor8 = function(byte1, byte2, byte3, ...)
+	local ret =
+	( (byte1%2==1 ~= (byte2%2==1) and 1) or 0 ) +
+	( (byte1%4>=2 ~= (byte2%4>=2) and 2) or 0 ) +
+	( (byte1%8>=4 ~= (byte2%8>=4) and 4) or 0 ) +
+	( (byte1%16>=8 ~= (byte2%16>=8) and 8) or 0 ) +
+	( (byte1%32>=16 ~= (byte2%32>=16) and 16) or 0 ) +
+	( (byte1%64>=32 ~= (byte2%64>=32) and 32) or 0 ) +
+	( (byte1%128>=64 ~= (byte2%128>=64) and 64) or 0 ) +
+	( (byte1>=128 ~= (byte2>=128) and 128) or 0 )
+
+	return (byte3 and bit_lua.bxor8(ret, byte3, ...)) or ret
+end
+
+
+bit_lua.bnot = function(int)
+	return 4294967295-int
+end
+
+bit_lua.bnot8 = function(byte)
+	return 255-byte
+end
+
+
+bit_lua.lshift = function(int, by)
+	return (int * (2^by))%POW32
+end
+
+bit_lua.rshift = function(int, by)
+	local shifted = int / (2^by)
+	return shifted-shifted%1
+end
+
+bit_lua.arshift = function(int, by)
+	local pf = 2^by
+	local shifted = int/pf
+	return shifted - shifted%1 + ( (int>=POW31 and (pf-1)*2^(32-by)) or 0 )
+end
+
+
+bit_lua.lrotate = function(int, by)
+	local shifted = int/(2^(32-by))
+	local fraction = shifted%1
+	return (shifted-fraction) + fraction*POW32
+end
+
+bit_lua.rrotate = function(int, by)
+	local shifted = int/(2^by)
+	local fraction = shifted%1
+	return (shifted-fraction) + fraction*POW32
+end
+
+
+return bit_lua

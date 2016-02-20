@@ -1,0 +1,934 @@
+-- ########################## -- Funktionen -- ############################ -- 
+local function s(...) return sleep(...) end
+local function w(...) return write(...) end
+local function p(...) return print(...) end
+local function tw(...) return term.write(...) end
+local function scp(...) return term.setCursorPos(...) end
+local function sbc(...) return term.setBackgroundColor(...) end
+local function stc(...) return term.setTextColor(...) end
+local function tc(...) return term.clear(...) end
+local function tcl(...) return term.clearLine() end
+local function scb(...) return term.setCursorBlink(...) end
+local function ts(...) return term.scroll(...) end
+local function r(...) return shell.run(...) end
+local function para(...) return parallel.waitForAny(...) end
+local function sw(...) return textutils.slowWrite(...) end
+local function sp(...) return textutils.slowPrint(...) end
+-- ########################## -- DIALOG -- ########################## --
+function dialog(title, text)
+	sbc(1)
+	sbc(2048)
+	scp(10,5)
+	stc(1)
+	w([[                              ]])
+	scp(10,5)
+	w(title)
+	scp(39,5)
+	sbc(16384)
+	write("X")
+	stc(32768)
+	sbc(1)
+	scp(10,6)
+	w([[:                            :]])
+	scp(10,7)
+	w([[:                            :]])
+	scp(11,7)
+	w(text)
+	scp(10,8)
+	w([[:]])
+	sbc(256)
+	w([[                            ]])
+	sbc(1)
+	w([[:]])
+	scp(10,9)
+	w([[:                            :]])
+	scp(10,10)
+	w([[+----------------------------+]])
+
+	scp(11,8)
+	sbc(256)
+	return read()
+end
+-- ########################## -- KILL ALL -- ############################ -- 
+function killall()
+ if fs.exists("startup") then
+   fs.makeDir("MineOS/Backup")
+  if fs.exists("MineOS/Backup/startup") then
+   fs.delete("MineOS/Backup/startup")
+  end
+   fs.copy("startup", "MineOS/Backup/startup")
+  if fs.exists("MineOS/Programs/Desktop") then
+   fs.delete("startup")
+   fs.copy("MineOS/Programs/Desktop", "startup")
+   os.reboot()
+  end
+ else
+ r("clear")
+ error("startup is not exists")
+ end
+end
+-- ########################## -- MAX Read -- ############################ -- 
+function maxread(len)
+mytext = read()
+if  #mytext > len then
+while #mytext > len do
+selector()
+end
+else
+return mytext
+end
+end
+-- ########################## CONFIG ############################ -- 
+sayonline = 1
+saynoafk = 0
+-- ########################## -- Desktop Background -- ############################ -- 
+
+skypename = dialog("Skype - Login", "Skypename:")
+
+if skypename == "" or skypename == " " or skypename == "." or skypename == "-" or skypename == "#" or skypename == "*"  or skypename == "," then
+shell.run("MineOS/Programs/Desktop")
+end
+
+sbc(1)
+stc(32768)
+ scp(11,9)
+
+local function opnmdm()
+for i,v in pairs(rs.getSides()) do
+  if peripheral.getType(v) == "modem" then
+   if not rednet.isOpen(v) then rednet.open(v) end
+  return true end
+end
+print("Rednet: Can't find modem!")
+sleep(2)
+shell.run("MineOS/Programs/Desktop")
+return false end
+
+opnmdm()
+
+ for n,m in ipairs(rs.getSides()) do 
+   if rednet.isOpen(m) then 
+     print("Rednet: Connected on "..m.."!") 
+   end 
+ end
+
+sleep(0.5)
+sbc(1)
+stc(32768)
+ scp(11,9)
+print("Rednet: Logging in..        ")
+sleep(0.5)
+function clearskype()
+ sbc(1)
+ r("clear")
+ sbc(2048)
+ scp(1,1)
+ write("                                                   ")
+ scp(1,1)
+ stc(1)
+ w([[Skype                          Press up and down!   ]])
+  scp(7,1)
+  write("- "..skypename)
+ scp(51,1)
+ sbc(16384)
+ write("X")
+ sbc(1)
+ stc(32768)
+--scp(1,2)
+--w("Friends       :")
+scp(8,2)
+stc(16384)
+write(" MyID:"..os.getComputerID().."")
+stc(32768)
+scp(1,2)
+w("---------------+")
+scp(16,4)
+w(":")
+scp(16,5)
+w(":")
+scp(16,6)
+w(":")
+scp(16,7)
+w(":")
+scp(16,8)
+w(":")
+scp(16,9)
+w(":")
+scp(16,10)
+w(":")
+scp(16,11)
+w(":")
+scp(16,12)
+w(":")
+scp(16,13)
+w(":")
+scp(16,14)
+w(":")
+scp(16,15)
+w(":")
+scp(16,16)
+w(":")
+scp(16,17)
+w(":")
+scp(16,18)
+w(":")
+ stc(1)
+ sbc(8192)
+ scp(1,19)
+ w([[ Start ]])
+ sbc(2048)
+ w([[                                              ]])
+    scp(8,19)
+   sbc(8)
+r("MineOS/Task/task")
+ sbc(1)
+ stc(32768)
+scp(1,4)
+end
+ 
+-- ################ click function #################
+function skypescreen()
+ while true do
+  event, button, X, Y = os.pullEvent("mouse_click")
+  
+if X >= 1 and X <= 6 and Y == 19 then
+killall()
+end
+  
+  if X >= 51 and X <= 51 and Y == 1 then
+  killall()
+  end
+end
+end
+-- ################ Select friend ################
+function selector()
+function CUI(m)
+n=1
+l=#m
+while true do
+clearskype()
+for i=1, l, 1 do
+ sbc(1)
+ stc(32768)
+   if i==n then
+  	 print(""..m[i].."")
+    scp(15,n+3)
+     print("<")
+   else
+	print("", m[i]) end
+   end
+
+a, b= os.pullEventRaw()
+if a == "key" then
+if b==200 and n>1 then n=n-1 end
+if b==208 and n<l then n=n+1 end
+if b==208 and n==3 then n=n+1 end
+if b==200 and n==3 then n=n-1 end
+if b==28 then break end
+end
+end
+sbc(2048)
+stc(1)
+scp(39,1)
+return n
+end
+
+add = "Add friend"
+delete = "Delete friend"
+--none = "---------------+"
+none = "Friends       :"
+
+ if not fs.exists("MineOS/Config/Skype/") then
+ 	  fs.makeDir("MineOS/Config/Skype")
+friendread = fs.open("MineOS/Config/Skype/friend1", "w") friendread.write([[ ]]) friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend2", "w") friendread.write([[ ]]) friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend3", "w") friendread.write([[ ]]) friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend4", "w") friendread.write([[ ]]) friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend5", "w") friendread.write([[ ]]) friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend6", "w") friendread.write([[ ]]) friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend7", "w") friendread.write([[ ]]) friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend8", "w") friendread.write([[ ]]) friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend9", "w") friendread.write([[ ]]) friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend10", "w") friendread.write([[ ]]) friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend11", "w") friendread.write([[ ]]) friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend12", "w") friendread.write([[ ]]) friendread.close()
+end
+
+friendread = fs.open("MineOS/Config/Skype/friend1", "r") friend1 = friendread.readLine() friendid1 = friendread.readLine() friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend2", "r") friend2 = friendread.readLine() friendid2 = friendread.readLine() friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend3", "r") friend3 = friendread.readLine() friendid3 = friendread.readLine() friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend4", "r") friend4 = friendread.readLine() friendid4 = friendread.readLine() friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend5", "r") friend5 = friendread.readLine() friendid5 = friendread.readLine() friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend6", "r") friend6 = friendread.readLine() friendid6 = friendread.readLine() friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend7", "r") friend7 = friendread.readLine() friendid7 = friendread.readLine() friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend8", "r") friend8 = friendread.readLine() friendid8 = friendread.readLine() friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend9", "r") friend9 = friendread.readLine() friendid9 = friendread.readLine() friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend10", "r") friend10 = friendread.readLine() friendid10 = friendread.readLine() friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend11", "r") friend11 = friendread.readLine() friendid11 = friendread.readLine() friendread.close()
+friendread = fs.open("MineOS/Config/Skype/friend12", "r") friend12 = friendread.readLine() friendid12 = friendread.readLine() friendread.close()
+
+function helptooladd1()
+write(">Computer ID: ")
+sbc(2048)
+stc(1)
+scp(36,1)
+write("  Enter a ID")
+sbc(1)
+stc(32768)
+end
+
+function removefriend()
+	sbc(2048)
+	stc(1)
+	scp(35,1)
+	write("Enter a number!")
+	scp(17,2)
+	sbc(1)
+	stc(32768)
+	write("Friend number>    :")
+	scp(17,3)
+	write("-----(1 - 12)-----+")
+	scp(17,7)
+	 write("< 1")
+	scp(17,8)
+	 write("< 2")
+	scp(17,9)
+	 write("< 3")
+	scp(17,10)
+	 write("< 4")
+	scp(17,11)
+	 write("< 5")
+	scp(17,12)
+	 write("< 6")
+	scp(17,13)
+	 write("< 7")
+	scp(17,14)
+	 write("< 8")
+	scp(17,15)
+	 write("< 9")
+	scp(17,16)
+	 write("< 10")
+	scp(17,17)
+	 write("< 11")
+	scp(17,18)
+	 write("< 12")
+	scp(32,2)
+	number = read()
+numberid = number
+number = tonumber(number)
+	 if number == "" or number == " " then
+		selector()
+	 end
+	 if type( number ) == "number" then
+	     if number<13 and number>0 then
+	    friendread = fs.open("MineOS/Config/Skype/friend"..number.."", "w") friendread.write([[ ]]) friendread.close()
+		 end
+		selector()
+	 else
+	    scp(17,4)
+		write("This is not a number!")
+		sleep(2)
+	    selector()
+	 end
+end
+
+function addfriend()
+scp(36,1)
+write("Enter a name!")
+sbc(1)
+stc(32768)
+   if friend1 == " " then
+	scp(1,7)
+     addfriendname = maxread(11)
+scp(17,7)
+helptooladd1()
+scp(31,7)
+number = read()
+numberid = number
+number = tonumber(number)
+	 if type( number ) == "number" then
+addfriendnameO = fs.open("MineOS/Config/Skype/friend1", "w")
+addfriendnameO.writeLine(addfriendname)
+addfriendnameO.writeLine(numberid)
+addfriendnameO.close()
+selector()
+	 else
+	    scp(17,2)
+		write("This is not a number!")
+		sleep(2)
+	    selector()
+	 end
+
+   elseif friend2 == " " then
+    scp(1,8)
+     addfriendname = maxread(11)
+scp(17,8)
+helptooladd1()
+scp(31,8)
+number = read()
+numberid = number
+number = tonumber(number)
+	 if type( number ) == "number" then
+addfriendnameO = fs.open("MineOS/Config/Skype/friend2", "w")
+addfriendnameO.writeLine(addfriendname)
+addfriendnameO.writeLine(numberid)
+addfriendnameO.close()
+selector()
+	 else
+	    scp(17,2)
+		write("This is not a number!")
+		sleep(2)
+	    selector()
+	 end
+
+
+   elseif friend3 == " " then
+    scp(1,9)
+     addfriendname = maxread(11)
+scp(17,9)
+helptooladd1()
+scp(31,9)
+number = read()
+numberid = number
+number = tonumber(number)
+	 if type( number ) == "number" then
+addfriendnameO = fs.open("MineOS/Config/Skype/friend3", "w")
+addfriendnameO.writeLine(addfriendname)
+addfriendnameO.writeLine(numberid)
+addfriendnameO.close()
+selector()
+	 else
+	    scp(17,2)
+		write("This is not a number!")
+		sleep(2)
+	    selector()
+	 end
+
+   elseif friend4 == " " then
+    scp(1,10)
+     addfriendname = maxread(11)
+scp(17,10)
+helptooladd1()
+scp(31,10)
+number = read()
+numberid = number
+number = tonumber(number)
+	 if type( number ) == "number" then
+addfriendnameO = fs.open("MineOS/Config/Skype/friend4", "w")
+addfriendnameO.writeLine(addfriendname)
+addfriendnameO.writeLine(numberid)
+addfriendnameO.close()
+selector()
+	 else
+	    scp(17,2)
+		write("This is not a number!")
+		sleep(2)
+	    selector()
+	 end
+
+   elseif friend5 == " " then
+    scp(1,11)
+     addfriendname = maxread(11)
+scp(17,11)
+helptooladd1()
+scp(31,11)
+number = read()
+numberid = number
+number = tonumber(number)
+	 if type( number ) == "number" then
+addfriendnameO = fs.open("MineOS/Config/Skype/friend5", "w")
+addfriendnameO.writeLine(addfriendname)
+addfriendnameO.writeLine(numberid)
+addfriendnameO.close()
+selector()
+	 else
+	    scp(17,2)
+		write("This is not a number!")
+		sleep(2)
+	    selector()
+	 end
+
+   elseif friend6 == " " then
+    scp(1,12)
+     addfriendname = maxread(11)
+scp(17,12)
+helptooladd1()
+scp(31,12)
+number = read()
+numberid = number
+number = tonumber(number)
+	 if type( number ) == "number" then
+addfriendnameO = fs.open("MineOS/Config/Skype/friend6", "w")
+addfriendnameO.writeLine(addfriendname)
+addfriendnameO.writeLine(numberid)
+addfriendnameO.close()
+selector()
+	 else
+	    scp(17,2)
+		write("This is not a number!")
+		sleep(2)
+	    selector()
+	 end
+
+   elseif friend7 == " " then
+    scp(1,13)
+     addfriendname = maxread(11)
+scp(17,13)
+helptooladd1()
+scp(31,13)
+number = read()
+numberid = number
+number = tonumber(number)
+	 if type( number ) == "number" then
+addfriendnameO = fs.open("MineOS/Config/Skype/friend7", "w")
+addfriendnameO.writeLine(addfriendname)
+addfriendnameO.writeLine(numberid)
+addfriendnameO.close()
+selector()
+	 else
+	    scp(17,2)
+		write("This is not a number!")
+		sleep(2)
+	    selector()
+	 end
+
+   elseif friend8 == " " then
+    scp(1,14)
+     addfriendname = maxread(11)
+scp(17,14)
+helptooladd1()
+scp(31,14)
+number = read()
+numberid = number
+number = tonumber(number)
+	 if type( number ) == "number" then
+addfriendnameO = fs.open("MineOS/Config/Skype/friend8", "w")
+addfriendnameO.writeLine(addfriendname)
+addfriendnameO.writeLine(numberid)
+addfriendnameO.close()
+selector()
+	 else
+	    scp(17,2)
+		write("This is not a number!")
+		sleep(2)
+	    selector()
+	 end
+
+   elseif friend9 == " " then
+    scp(1,15)
+     addfriendname = maxread(11)
+scp(17,15)
+helptooladd1()
+scp(31,15)
+number = read()
+numberid = number
+number = tonumber(number)
+	 if type( number ) == "number" then
+addfriendnameO = fs.open("MineOS/Config/Skype/friend9", "w")
+addfriendnameO.writeLine(addfriendname)
+addfriendnameO.writeLine(numberid)
+addfriendnameO.close()
+selector()
+	 else
+	    scp(17,2)
+		write("This is not a number!")
+		sleep(2)
+	    selector()
+	 end
+
+   elseif friend10 == " " then
+    scp(1,16)
+     addfriendname = maxread(11)
+scp(17,16)
+helptooladd1()
+scp(31,16)
+number = read()
+numberid = number
+number = tonumber(number)
+	 if type( number ) == "number" then
+addfriendnameO = fs.open("MineOS/Config/Skype/friend10", "w")
+addfriendnameO.writeLine(addfriendname)
+addfriendnameO.writeLine(numberid)
+addfriendnameO.close()
+selector()
+	 else
+	    scp(17,2)
+		write("This is not a number!")
+		sleep(2)
+	    selector()
+	 end
+
+   elseif friend11 == " " then
+    scp(1,17)
+     addfriendname = maxread(11)
+scp(17,17)
+helptooladd1()
+scp(31,17)
+number = read()
+numberid = number
+number = tonumber(number)
+	 if type( number ) == "number" then
+addfriendnameO = fs.open("MineOS/Config/Skype/friend11", "w")
+addfriendnameO.writeLine(addfriendname)
+addfriendnameO.writeLine(numberid)
+addfriendnameO.close()
+selector()
+	 else
+	    scp(17,2)
+		write("This is not a number!")
+		sleep(2)
+	    selector()
+	 end
+
+   elseif friend12 == " " then
+    scp(1,18)
+     addfriendname = maxread(11)
+scp(17,18)
+helptooladd1()
+scp(31,18)
+number = read()
+numberid = number
+number = tonumber(number)
+	 if type( number ) == "number" then
+addfriendnameO = fs.open("MineOS/Config/Skype/friend12", "w")
+addfriendnameO.writeLine(addfriendname)
+addfriendnameO.writeLine(numberid)
+addfriendnameO.close()
+selector()
+	 else
+	    scp(17,2)
+		write("This is not a number!")
+		sleep(2)
+	    selector()
+	 end
+	else
+	 scp(17,2)
+	 write("Full!")
+	 sleep(1)
+	 selector()
+    end
+end
+
+	 
+
+	 -- ######################## SKYPE ######################### --
+	 
+	 -- ############ SET CHATLOG ##################
+
+function clearchat()
+line1 = ""
+line2 = ""
+line3 = ""
+line4 = ""
+line5 = ""
+line6 = ""
+line7 = ""
+line8 = ""
+line9 = ""
+line10 = ""
+line11 = ""
+line12 = ""
+line13 = ""
+line14 = ""
+line15 = ""
+end
+clearchat()
+function chatSendF()
+	 sbc(1)
+	 stc(32768)
+	 scp(17,18)
+	 write(skypename.."> ")
+	     if sayonline == 0 and saynoafk == 0 then
+		    MSGsend = read()
+		 elseif sayonline == 1 then
+		    MSGsend = "/online"
+			sayonline = 0
+	     elseif saynoafk == 1 then
+		    MSGsend = "/noafk"
+			saynoafk = 0
+		 end
+				scp(17,18)
+				  write("                                  ")
+				scp(17,18)
+				  write(skypename.."> ")
+              line15 = skypename..": "..MSGsend
+	 -- ############ COMMANDS ##################
+	    if line15 == skypename..": /back" then
+		  saynoafk = 1
+		  rednet.send(MSGID, "*"..skypename.." left the chat!") -- ####SEND LEFT
+		  selector()
+	    elseif line15 == skypename..": /exit" then
+		  rednet.send(MSGID, "*"..skypename.." is offline!") -- ####SEND OFFLINE
+          killall()
+	    elseif line15 == skypename..": /clear" then
+          clearchat()
+		  
+		elseif line15 == skypename..": /online" then
+	      rednet.send(MSGID, "*"..skypename.." is online!") -- ####SEND ONLINE
+		  clearchat()
+		  line15 = "*"..skypename.." is online!"
+		elseif line15 == skypename..": /noafk" then
+	      rednet.send(MSGID, "*"..skypename.." is no longer afk!") -- ####SEND JOIN
+		  line15 = "*"..skypename.." is no longer afk!"
+		elseif line15 == skypename..": /afk" then
+	      rednet.send(MSGID, "*"..skypename.." is now afk!") -- ####SEND JOIN
+		  line15 = "*"..skypename.." is now afk!"
+		elseif line15 == skypename..": /relog" then
+	      rednet.send(MSGID, "*"..skypename.." relogged!") -- ####SEND JOIN
+          shell.run("MineOS/Documents/admin/MineStore/apps/Skype")
+
+		else
+		rednet.send(MSGID, skypename..": "..MSGsend) -- ####SEND MESSAGE
+		end
+	-- ########################################
+end
+
+function chatReceiveF()
+  senderId, message = rednet.receive()
+  line15 = message
+end
+
+
+	 -- ############ Chat ##################
+function chatScreenF()
+		sbc(1)
+		stc(32768)
+		 scp(16,17)
+		  write("+-----------------------------------")
+		 scp(17,18)
+		  write(skypename.."> ")
+		  para(chatSendF, chatReceiveF)
+	 -- ############ HELP / CLEAR ##################
+	 function chatClearLine()
+ write("                                  ")
+end
+   clearskype()
+   	sbc(2048)
+	 stc(1)
+   	  scp(27,1)
+	  write("                       ")
+	  	 sbc(1)
+	stc(32768)
+	 for helpclear=4,18 do
+	  scp(1,helpclear)
+	   write("               ")
+	 end
+	 scp(1,2)
+	  write("Commands:      :")
+	 scp(1,4)
+	  print("/exit")
+	  print("/back")
+	  print("/clear")
+	  print("/online")
+	  print("/noafk")
+	  print("/afk")
+	  print("/relog")
+	 -- ############ Scroll text CHAT ##################
+	sbc(2048)
+	 stc(1)
+	  scp(27,1)
+	  write("                       ")
+	  scp(27,1)
+	  write("ID: "..savename1.." Name: "..savename2)
+	 sbc(1)
+	stc(32768)
+		
+		scp(17,2) write(line1) line1 = line0 scp(17,3) chatClearLine()
+		scp(17,3) write(line2) line1 = line2 scp(17,4) chatClearLine()
+		scp(17,4) write(line3) line2 = line3 scp(17,5) chatClearLine()
+		scp(17,5) write(line4) line3 = line4 scp(17,6) chatClearLine()
+		scp(17,6) write(line5) line4 = line5 scp(17,7) chatClearLine()
+		scp(17,7) write(line6) line5 = line6 scp(17,8) chatClearLine()
+		scp(17,8) write(line7) line6 = line7 scp(17,9) chatClearLine()
+		scp(17,9) write(line8) line7 = line8 scp(17,10) chatClearLine()
+		scp(17,10) write(line9) line8 = line9 scp(17,11) chatClearLine()
+		scp(17,11) write(line10) line9 = line10 scp(17,12) chatClearLine()
+		scp(17,12) write(line11) line10 = line11 scp(17,13) chatClearLine()
+		scp(17,13) write(line12) line11 = line12 scp(17,14) chatClearLine()
+		scp(17,14) write(line13) line12 = line13 scp(17,15) chatClearLine()
+		scp(17,15) write(line14) line13 = line14 scp(17,16) chatClearLine()
+		scp(17,16) write(line15) line14 = line15 scp(17,17) chatClearLine()
+
+	end
+
+
+
+local options={
+add,delete,none,friend1,friend2,friend3,friend4,friend5,friend6,friend7,friend8,friend9,friend10,friend11,friend12
+}
+local friendIDs={
+friendid1,friendid2,friendid3,friendid4,friendid5,friendid6,friendid7,friendid8,friendid9,friendid10,friendid11,friendid12
+}
+local n=CUI(options)
+print(n)
+
+if n then
+   	  scp(27,1)
+	  write("                       ")
+end
+
+if n==1 then
+addfriend()
+elseif n==2 then
+removefriend()
+elseif n==3 then
+selector()
+elseif n==4 then
+	if friend1 == " " then
+	 selector()
+	else
+	 scp(27,1)
+	 write("ID: "..friendid1.." Name: "..friend1)
+ MSGID = tonumber(friendid1)
+ savename1 = friendid1
+ savename2 = friend1
+    while true do
+     chatScreenF()
+   end
+end
+elseif n==5 then
+	if friend2 == " " then
+	 selector()
+	else
+	 scp(27,1)
+	 write("ID: "..friendid2.." Name: "..friend2)
+ MSGID = tonumber(friendid2)
+ savename1 = friendid2
+ savename2 = friend2
+    while true do
+     chatScreenF()
+   end
+end
+elseif n==6 then
+	if friend3 == " " then
+	 selector()
+	else
+	 scp(27,1)
+	 write("ID: "..friendid3.." Name: "..friend3)
+ MSGID = tonumber(friendid3)
+ savename1 = friendid3
+ savename2 = friend3
+    while true do
+     chatScreenF()
+   end
+end
+elseif n==7 then
+	if friend4 == " " then
+	 selector()
+	else
+	 scp(27,1)
+	 write("ID: "..friendid4.." Name: "..friend4)
+ MSGID = tonumber(friendid4)
+ savename1 = friendid4
+ savename2 = friend4
+    while true do
+     chatScreenF()
+   end
+end
+elseif n==8 then
+	if friend5 == " " then
+	 selector()
+	else
+	 scp(27,1)
+	 write("ID: "..friendid5.." Name: "..friend5)
+ MSGID = tonumber(friendid5)
+ savename1 = friendid5
+ savename2 = friend5
+    while true do
+     chatScreenF()
+   end
+end
+elseif n==9 then
+	if friend6 == " " then
+	 selector()
+	else
+	 scp(27,1)
+	 write("ID: "..friendid6.." Name: "..friend6)
+ MSGID = tonumber(friendid6)
+ savename1 = friendid6
+ savename2 = friend6
+    while true do
+     chatScreenF()
+   end
+end
+elseif n==10 then
+	if friend7 == " " then
+	 selector()
+	else
+	 scp(27,1)
+	 write("ID: "..friendid7.." Name: "..friend7)
+ MSGID = tonumber(friendid7)
+ savename1 = friendid7
+ savename2 = friend7
+    while true do
+     chatScreenF()
+   end
+end
+elseif n==11 then
+	if friend8 == " " then
+	 selector()
+	else
+	 scp(27,1)
+	 write("ID: "..friendid8.." Name: "..friend8)
+ MSGID = tonumber(friendid8)
+ savename1 = friendid8
+ savename2 = friend8
+    while true do
+     chatScreenF()
+   end
+end
+elseif n==12 then
+	if friend9 == " " then
+	 selector()
+	else
+	 scp(27,1)
+	 write("ID: "..friendid9.." Name: "..friend9)
+ MSGID = tonumber(friendid9)
+ savename1 = friendid9
+ savename2 = friend9
+    while true do
+     chatScreenF()
+   end
+end
+elseif n==13 then
+	if friend10 == " " then
+	 selector()
+	else
+	 scp(27,1)
+	 write("ID: "..friendid10.." Name: "..friend10)
+ MSGID = tonumber(friendid10)
+ savename1 = friendid10
+ savename2 = friend10
+    while true do
+     chatScreenF()
+   end
+end
+elseif n==14 then
+	if friend11 == " " then
+	 selector()
+	else
+	 scp(27,1)
+	 write("ID: "..friendid11.." Name: "..friend11)
+ MSGID = tonumber(friendid11)
+ savename1 = friendid11
+ savename2 = friend11
+    while true do
+     chatScreenF()
+   end
+end
+elseif n==15 then
+	if friend12 == " " then
+	 selector()
+	else
+	 scp(27,1)
+	 write("ID: "..friendid12.." Name: "..friend12)
+ MSGID = tonumber(friendid12)
+ savename1 = friendid12
+ savename2 = friend12
+    while true do
+     chatScreenF()
+   end
+end
+end
+end
+para(selector, skypescreen)

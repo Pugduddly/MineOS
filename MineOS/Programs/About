@@ -1,0 +1,8 @@
+version = fs.open("MineOS/Config/OSversion", "r")
+OSver = version.readLine()
+version.close()
+print("MineOS")
+print("Version "..OSver.." Beta")
+print(os.version())
+print("© 2016 Evan Carlson (Pugduddly)")
+

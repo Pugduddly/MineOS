@@ -1,6 +1,6 @@
 --[[
 
-   MineOS 1.0
+   MineOS 1.2
 
    Based on LabyOS 3.0 ( http://www.computercraft.info/forums2/index.php?/topic/12095-new-april-2014-windows-in-minecraft-27-windows-xp-labyos/ )
 
@@ -23,7 +23,7 @@
    
 ]]--
 
--- ########################## -- Funktionen -- ############################ -- 
+-- ########################## -- Functions -- ############################ -- 
 local function s(...) return sleep(...) end
 local function w(...) return write(...) end
 local function p(...) return print(...) end
@@ -39,12 +39,14 @@ local function r(...) return shell.run(...) end
 local function para(...) return parallel.waitForAny(...) end
 local function sw(...) return textutils.slowWrite(...) end
 local function sp(...) return textutils.slowPrint(...) end
--- ########################## -- Einstellungen -- ############################ -- 
+-- ########################## -- Initialization -- ############################ -- 
 os.pullEvent = os.pullEventRaw
-OfficialVersion = "1.0"
+OfficialVersion = "1.2"
 loopbreak2 = 0
 noBootScreen = "false"
 logo = paintutils.loadImage("MineOS/Texture/Logo")
+os.loadAPI("MineOS/API/SHA")  -- SHA-256 API
+os.loadAPI("MineOS/API/BSOD") -- BSoD API
 sbc(32768)
 stc(1)
 if not fs.exists("MineOS/Programs") then
@@ -483,7 +485,7 @@ while true do
 		    sw([[                  ]])
 		    scp(22,6)
 		    passwordcheck1 = read("*")
-		     if passwordcheck1 == userpass1 then
+		     if SHA.sha256(passwordcheck1) == userpass1 then
 			  loopbreak2a()
 			if not fs.exists("MineOS/Online") then
              fs.makeDir("MineOS/Online")
@@ -533,7 +535,7 @@ if X >= 17 and X <= 40 and Y == 9 or X >= 17 and X <= 40 and Y == 10 then
 		    sw([[                  ]])
 		    scp(22,10)
 		    passwordcheck1 = read("*")
-		     if passwordcheck1 == userpass2 then
+		     if SHA.sha256(passwordcheck1) == userpass2 then
 			  loopbreak2a()
 			if not fs.exists("MineOS/Online") then
              fs.makeDir("MineOS/Online")
@@ -583,7 +585,7 @@ if X >= 17 and X <= 40 and Y == 13 or X >= 17 and X <= 40 and Y == 14 then
 		    sw([[                  ]])
 		    scp(22,14)
 		    passwordcheck1 = read("*")
-		     if passwordcheck1 == userpass3 then
+		     if SHA.sha256(passwordcheck1) == userpass3 then
 			  loopbreak2a()
 			if not fs.exists("MineOS/Online") then
              fs.makeDir("MineOS/Online")
@@ -766,7 +768,7 @@ end
 function tabjumpshell()
 parallel.waitForAny(tabjump1, tabjump2)
 end
-tabjumpshell()
+BSOD.doErrorTrap(tabjumpshell)
 -- ############### -- 
 function UpdaterL()
 
@@ -988,5 +990,5 @@ shell.run("clear")
 return menu()
 end
 -- ## RUN ## -- 
-Systemstart1()
+BSOD.doErrorTrap(Systemstart1)
 -- ######### --
