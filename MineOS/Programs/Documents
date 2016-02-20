@@ -1,0 +1,712 @@
+-- ########################## -- Funktionen -- ############################ -- 
+local function s(...) return sleep(...) end
+local function w(...) return write(...) end
+local function p(...) return print(...) end
+local function tw(...) return term.write(...) end
+local function scp(...) return term.setCursorPos(...) end
+local function sbc(...) return term.setBackgroundColor(...) end
+local function stc(...) return term.setTextColor(...) end
+local function tc(...) return term.clear(...) end
+local function tcl(...) return term.clearLine() end
+local function scb(...) return term.setCursorBlink(...) end
+local function ts(...) return term.scroll(...) end
+local function r(...) return shell.run(...) end
+local function para(...) return parallel.waitForAny(...) end
+local function sw(...) return textutils.slowWrite(...) end
+local function sp(...) return textutils.slowPrint(...) end
+-- ##################################### Settings #################################### --
+		   dataname = fs.open("MineOS/Online/data", "r")
+            if dataname then
+             dataname2a = dataname.readLine()
+		    end
+		   dataname.close()
+
+fs.makeDir("MineOS/Documents/"..dataname2a)
+fileRUN1 = "MineOS/Documents/"..dataname2a.."/1"
+fileRUN2 = "MineOS/Documents/"..dataname2a.."/2"
+fileRUN3 = "MineOS/Documents/"..dataname2a.."/3"
+fileRUN4 = "MineOS/Documents/"..dataname2a.."/4"
+fileRUN5 = "MineOS/Documents/"..dataname2a.."/5"
+fileRUN6 = "MineOS/Documents/"..dataname2a.."/6"
+fileRUN7 = "MineOS/Documents/"..dataname2a.."/7"
+fileRUN8 = "MineOS/Documents/"..dataname2a.."/8"
+fileRUN9 = "MineOS/Documents/"..dataname2a.."/9"
+fileRUN10 = "MineOS/Documents/"..dataname2a.."/10"
+-- ########################## -- Desktop Background -- ############################ -- 
+function resetScreenDoc()
+ sbc(1)
+ r("clear")
+ sbc(2048)
+ scp(1,1)
+ write([[                                                   ]])
+ scp(1,1)
+ stc(1)
+ write("My Documents")
+ scp(51,1)
+ sbc(16384)
+ write("X")
+ stc(1)
+ sbc(8192)
+ scp(1,19)
+ w([[ Start ]])
+ sbc(2048)
+ w([[                                              ]])
+ timeprint1()
+    scp(8,19)
+   sbc(8)
+r("MineOS/Task/task")
+ sbc(1)
+ stc(32768)
+ scp(2,3)
+ end
+ resetScreenDoc()
+ -- ################################## File counter ####################################### --
+  sbc(1)
+ stc(32768)
+ scp(42,18)
+ DiskGB = 0
+if fs.exists(fileRUN1) then
+ DiskGB = DiskGB + 1
+end
+if fs.exists(fileRUN2) then
+ DiskGB = DiskGB + 1
+end
+if fs.exists(fileRUN3) then
+ DiskGB = DiskGB + 1
+end
+if fs.exists(fileRUN4) then
+ DiskGB = DiskGB + 1
+end
+if fs.exists(fileRUN5) then
+ DiskGB = DiskGB + 1
+end
+if fs.exists(fileRUN6) then
+ DiskGB = DiskGB + 1
+end
+if fs.exists(fileRUN7) then
+ DiskGB = DiskGB + 1
+end
+if fs.exists(fileRUN8) then
+ DiskGB = DiskGB + 1
+end
+if fs.exists(fileRUN9) then
+ DiskGB = DiskGB + 1
+end
+if fs.exists(fileRUN10) then
+ DiskGB = DiskGB + 1
+end
+if DiskGB >= 10 then
+scp(41,18)
+end
+w(DiskGB.."/10 Files")
+ -- ################################### Load Screen ###################################### --
+image = paintutils.loadImage("MineOS/Texture/Documents")
+paintutils.drawImage(image, 4, 3)
+paintutils.drawImage(image, 4, 10)
+-- ###################################### Function ################################### --
+function namewindow()
+	sbc(2048)
+	stc(1)
+	scp(15,5)
+	w([[Add File          ]])
+	sbc(16384)
+	w([[X]])
+	sbc(1)
+	stc(32768)
+	scp(15,6)
+	w([[: Name:           :]])
+	scp(15,7)
+	sbc(1)
+--	w([[: ]])
+--	sbc(258)
+--	w([[               ]])
+--	sbc(1)
+--	w([[ :]])
+	w([[:                 :]])
+	sbc(1)
+	scp(15,8)
+	w([[:                 :]])
+	scp(15,9)
+	w([[+-----------------+]])
+--	scp(17,7)
+--	sbc(258)
+--	stc(128)
+--	w([[rom/programs/]])
+	sbc(1)
+	scp(17,7)
+	stc(32768)
+	return read()
+end
+
+-- ########################### Logo 1 ########################## --
+if not fs.exists(fileRUN1) then
+  stc(16384)
+  sbc(256)
+     scp(7,4)
+  w([[\/]])
+     scp(7,5)
+  w([[/\]])
+else
+  stc(16384)
+  sbc(256)
+     scp(7,4)
+  w("#0")
+  scp(6,5)
+  w("Open")
+     scp(10,3)
+  stc(1)
+  sbc(16384)
+  w("X")
+end
+-- ########################### Logo 2 ########################## --
+if not fs.exists(fileRUN2) then
+  stc(16384)
+  sbc(256)
+     scp(16,4)
+  w([[\/]])
+     scp(16,5)
+  w([[/\]])
+else
+  stc(16384)
+  sbc(256)
+     scp(16,4)
+  w("#1")
+     scp(15,5)
+  w("Open")
+     scp(19,3)
+  stc(1)
+  sbc(16384)
+  w("X")
+end
+-- ########################### Logo 3 ########################## --
+if not fs.exists(fileRUN3) then
+  stc(16384)
+  sbc(256)
+     scp(25,4)
+  w([[\/]])
+     scp(25,5)
+  w([[/\]])
+else
+  stc(16384)
+  sbc(256)
+     scp(25,4)
+  w("#2")
+     scp(24,5)
+  w("Open")
+     scp(28,3)
+  stc(1)
+  sbc(16384)
+  w("X")
+end
+-- ########################### Logo 4 ########################## --
+if not fs.exists(fileRUN4) then
+  stc(16384)
+  sbc(256)
+     scp(34,4)
+  w([[\/]])
+     scp(34,5)
+  w([[/\]])
+else
+  stc(16384)
+  sbc(256)
+     scp(34,4)
+  w("#3")
+     scp(33,5)
+  w("Open")
+     scp(37,3)
+  stc(1)
+  sbc(16384)
+  w("X")
+end
+-- ########################### Logo 5 ########################## --
+if not fs.exists(fileRUN5) then
+  stc(16384)
+  sbc(256)
+     scp(43,4)
+  w([[\/]])
+     scp(43,5)
+  w([[/\]])
+else
+  stc(16384)
+  sbc(256)
+     scp(43,4)
+  w("#4")
+     scp(42,5)
+  w("Open")
+     scp(46,3)
+  stc(1)
+  sbc(16384)
+  w("X")
+end
+-- ########################### Logo 6 ########################## --
+if not fs.exists(fileRUN6) then
+  stc(16384)
+  sbc(256)
+     scp(7,11)
+  w([[\/]])
+     scp(7,12)
+  w([[/\]])
+else
+  stc(16384)
+  sbc(256)
+     scp(7,11)
+  w("#5")
+  scp(6,12)
+  w("Open")
+     scp(10,10)
+  stc(1)
+  sbc(16384)
+  w("X")
+end
+-- ########################### Logo 7 ########################## --
+if not fs.exists(fileRUN7) then
+  stc(16384)
+  sbc(256)
+     scp(16,11)
+  w([[\/]])
+     scp(16,12)
+  w([[/\]])
+else
+  stc(16384)
+  sbc(256)
+     scp(16,11)
+  w("#6")
+     scp(15,12)
+  w("Open")
+     scp(19,10)
+  stc(1)
+  sbc(16384)
+  w("X")
+end
+-- ########################### Logo 8 ########################## --
+if not fs.exists(fileRUN8) then
+  stc(16384)
+  sbc(256)
+     scp(25,11)
+  w([[\/]])
+     scp(25,12)
+  w([[/\]])
+else
+  stc(16384)
+  sbc(256)
+     scp(25,11)
+  w("#7")
+     scp(24,12)
+  w("Open")
+     scp(28,10)
+  stc(1)
+  sbc(16384)
+  w("X")
+end
+-- ########################### Logo 9 ########################## --
+if not fs.exists(fileRUN9) then
+  stc(16384)
+  sbc(256)
+     scp(34,11)
+  w([[\/]])
+     scp(34,12)
+  w([[/\]])
+else
+  stc(16384)
+  sbc(256)
+     scp(34,11)
+  w("#8")
+     scp(33,12)
+  w("Open")
+     scp(37,10)
+  stc(1)
+  sbc(16384)
+  w("X")
+end
+-- ########################### Logo 10 ########################## --
+if not fs.exists(fileRUN10) then
+  stc(16384)
+  sbc(256)
+     scp(43,11)
+  w([[\/]])
+     scp(43,12)
+  w([[/\]])
+else
+  stc(16384)
+  sbc(256)
+     scp(43,11)
+  w("#9")
+     scp(42,12)
+  w("Open")
+     scp(46,10)
+  stc(1)
+  sbc(16384)
+  w("X")
+end
+-- ############################################################# --
+ while true do
+  event, button, X, Y = os.pullEvent("mouse_click")
+  
+if X >= 1 and X <= 6 and Y == 19 then
+startmenu()
+error("Terminated")
+break
+end
+  
+  if X >= 51 and X <= 51 and Y == 1 then
+   resetDesktop()
+   error("Terminated")
+  break
+  end
+  
+-- ############################ Slot 1 ############################# --
+   if X >= 5 and X <= 9 and Y == 3 or X >= 5 and X <= 9 and Y == 4 or X >= 5 and X <= 9 and Y == 5 or X >= 5 and X <= 9 and Y == 6 then
+     if fs.exists(fileRUN1) then
+	  resetScreenDoc()
+shell.run("clear")
+sbc(32768)
+      r("MineOS/Programs/Window "..fileRUN1)
+	 else
+--      namewindow()
+      fileadd = namewindow()
+--	fileadd = read()
+	  if fileadd == "" then
+	    r("MineOS/Programs/Documents")
+	  elseif fs.exists(fileadd) then
+	  sbc(1)
+	  scp(1,17)
+	    fs.copy(fileadd, fileRUN1)
+		sbc(256)
+		scp(17,7)
+		stc(16384)
+		w("File added!    ")
+        sleep(1)
+		r("MineOS/Programs/Documents")
+	  elseif not fs.exists(fileadd) then
+	    scp(17,7)
+		stc(16384)
+		w("File not found!")
+        sleep(2)
+		r("MineOS/Programs/Documents")
+	  end
+    break
+   end
+  elseif X >= 10 and X <= 10 and Y == 3 then
+    fs.delete(fileRUN1)
+	r("MineOS/Programs/Documents")
+ end
+-- ############################ Slot 2 ############################# --
+    if X >= 14 and X <= 18 and Y == 3 or X >= 14 and X <= 18 and Y == 4 or X >= 14 and X <= 18 and Y == 5 or X >= 14 and X <= 18 and Y == 6 then
+     if fs.exists(fileRUN2) then
+	 resetScreenDoc()
+shell.run("clear")
+sbc(32768)
+      r("MineOS/Programs/Window "..fileRUN2)
+	 else
+         namewindow()
+	fileadd2 = read()
+	  if fileadd2 == "" then
+	    r("MineOS/Programs/Documents")
+	  elseif fs.exists(fileadd2) then
+	  	  sbc(1)
+	   scp(1,17)
+	    fs.copy(fileadd2, fileRUN2)
+		sbc(256)
+		scp(17,7)
+		stc(16384)
+		w("File added!    ")
+        sleep(1)
+		r("MineOS/Programs/Documents")
+	  elseif not fs.exists(fileadd2) then
+	    scp(17,7)
+		stc(16384)
+		w("File not found!")
+        sleep(2)
+		r("MineOS/Programs/Documents")
+	  end
+    break
+   end
+  elseif X >= 19 and X <= 19 and Y == 3 then
+    fs.delete(fileRUN2)
+	r("MineOS/Programs/Documents")
+ end
+-- ############################ Slot 3 ############################# --
+    if X >= 23 and X <= 27 and Y == 3 or X >= 23 and X <= 27 and Y == 4 or X >= 23 and X <= 27 and Y == 5 or X >= 23 and X <= 27 and Y == 6 then
+     if fs.exists(fileRUN3) then
+	 resetScreenDoc()
+shell.run("clear")
+sbc(32768)
+      r("MineOS/Programs/Window "..fileRUN3)
+	 else
+         namewindow()
+	fileadd3 = read()
+	  if fileadd3 == "" then
+	    r("MineOS/Programs/Documents")
+	  elseif fs.exists(fileadd3) then
+	  	  sbc(1)
+	    scp(1,17)
+	    fs.copy(fileadd3, fileRUN3)
+		sbc(256)
+		scp(17,7)
+		stc(16384)
+		w("File added!    ")
+        sleep(1)
+		r("MineOS/Programs/Documents")
+	  elseif not fs.exists(fileadd3) then
+	    scp(17,7)
+		stc(16384)
+		w("File not found!")
+        sleep(2)
+		r("MineOS/Programs/Documents")
+	  end
+    break
+   end
+  elseif X >= 28 and X <= 28 and Y == 3 then
+    fs.delete(fileRUN3)
+	r("MineOS/Programs/Documents")
+ end
+-- ############################ Slot 4 ############################# --
+    if X >= 32 and X <= 36 and Y == 3 or X >= 32 and X <= 36 and Y == 4 or X >= 32 and X <= 36 and Y == 5 or X >= 32 and X <= 36 and Y == 6 then
+     if fs.exists(fileRUN4) then
+	 resetScreenDoc()
+shell.run("clear")
+sbc(32768)
+      r("MineOS/Programs/Window "..fileRUN4)
+	 else
+         namewindow()
+	fileadd4 = read()
+	  if fileadd4 == "" then
+	    r("MineOS/Programs/Documents")
+	  elseif fs.exists(fileadd4) then
+	  	  sbc(1)
+	    scp(1,17)
+	    fs.copy(fileadd4, fileRUN4)
+		sbc(256)
+		scp(17,7)
+		stc(16384)
+		w("File added!    ")
+        sleep(1)
+		r("MineOS/Programs/Documents")
+	  elseif not fs.exists(fileadd4) then
+	    scp(17,7)
+		stc(16384)
+		w("File not found!")
+        sleep(2)
+		r("MineOS/Programs/Documents")
+	  end
+    break
+   end
+  elseif X >= 37 and X <= 37 and Y == 3 then
+    fs.delete(fileRUN4)
+	r("MineOS/Programs/Documents")
+ end
+-- ############################ Slot 5 ############################# --
+    if X >= 41 and X <= 45 and Y == 3 or X >= 41 and X <= 45 and Y == 4 or X >= 41 and X <= 45 and Y == 5 or X >= 41 and X <= 45 and Y == 6 then
+     if fs.exists(fileRUN5) then
+	 resetScreenDoc()
+shell.run("clear")
+sbc(32768)
+      r("MineOS/Programs/Window "..fileRUN5)
+	 else
+         namewindow()
+	fileadd5 = read()
+	  if fileadd5 == "" then
+	    r("MineOS/Programs/Documents")
+	  elseif fs.exists(fileadd5) then
+	  	  sbc(1)
+	    scp(1,17)
+	    fs.copy(fileadd5, fileRUN5)
+		sbc(256)
+		scp(17,7)
+		stc(16384)
+		w("File added!    ")
+        sleep(1)
+		r("MineOS/Programs/Documents")
+	  elseif not fs.exists(fileadd5) then
+	    scp(17,7)
+		stc(16384)
+		w("File not found!")
+        sleep(2)
+		r("MineOS/Programs/Documents")
+	  end
+    break
+   end
+  elseif X >= 46 and X <= 46 and Y == 3 then
+    fs.delete(fileRUN5)
+	r("MineOS/Programs/Documents")
+ end
+-- ############################ Slot 6 ############################# --
+   if X >= 5 and X <= 9 and Y == 10 or X >= 5 and X <= 9 and Y == 11 or X >= 5 and X <= 9 and Y == 12 or X >= 5 and X <= 9 and Y == 13 then
+     if fs.exists(fileRUN6) then
+	  resetScreenDoc()
+shell.run("clear")
+sbc(32768)
+      r("MineOS/Programs/Window "..fileRUN6)
+	 else
+      namewindow()
+	fileadd6 = read()
+	  if fileadd6 == "" then
+	    r("MineOS/Programs/Documents")
+	  elseif fs.exists(fileadd6) then
+	  sbc(1)
+	  scp(1,17)
+	    fs.copy(fileadd6, fileRUN6)
+		sbc(256)
+		scp(17,7)
+		stc(16384)
+		w("File added!    ")
+        sleep(1)
+		r("MineOS/Programs/Documents")
+	  elseif not fs.exists(fileadd6) then
+	    scp(17,7)
+		stc(16384)
+		w("File not found!")
+        sleep(2)
+		r("MineOS/Programs/Documents")
+	  end
+    break
+   end
+  elseif X >= 10 and X <= 10 and Y == 10 then
+    fs.delete(fileRUN6)
+	r("MineOS/Programs/Documents")
+ end
+-- ############################ Slot 7 ############################# --
+    if X >= 14 and X <= 18 and Y == 10 or X >= 14 and X <= 18 and Y == 11 or X >= 14 and X <= 18 and Y == 12 or X >= 14 and X <= 18 and Y == 13 then
+     if fs.exists(fileRUN7) then
+	 resetScreenDoc()
+shell.run("clear")
+sbc(32768)
+      r("MineOS/Programs/Window "..fileRUN7)
+	 else
+         namewindow()
+	fileadd7 = read()
+	  if fileadd7 == "" then
+	    r("MineOS/Programs/Documents")
+	  elseif fs.exists(fileadd7) then
+	  	  sbc(1)
+	   scp(1,17)
+	    fs.copy(fileadd7, fileRUN7)
+		sbc(256)
+		scp(17,7)
+		stc(16384)
+		w("File added!    ")
+        sleep(1)
+		r("MineOS/Programs/Documents")
+	  elseif not fs.exists(fileadd7) then
+	    scp(17,7)
+		stc(16384)
+		w("File not found!")
+        sleep(2)
+		r("MineOS/Programs/Documents")
+	  end
+    break
+   end
+  elseif X >= 19 and X <= 19 and Y == 10 then
+    fs.delete(fileRUN7)
+	r("MineOS/Programs/Documents")
+ end
+-- ############################ Slot 8 ############################# --
+    if X >= 23 and X <= 27 and Y == 10 or X >= 23 and X <= 27 and Y == 11 or X >= 23 and X <= 27 and Y == 12 or X >= 23 and X <= 27 and Y == 13 then
+     if fs.exists(fileRUN8) then
+	 resetScreenDoc()
+shell.run("clear")
+sbc(32768)
+      r("MineOS/Programs/Window "..fileRUN8)
+	 else
+         namewindow()
+	fileadd8 = read()
+	  if fileadd8 == "" then
+	    r("MineOS/Programs/Documents")
+	  elseif fs.exists(fileadd8) then
+	  	  sbc(1)
+	    scp(1,17)
+	    fs.copy(fileadd8, fileRUN8)
+		sbc(256)
+		scp(17,7)
+		stc(16384)
+		w("File added!    ")
+        sleep(1)
+		r("MineOS/Programs/Documents")
+	  elseif not fs.exists(fileadd8) then
+	    scp(17,7)
+		stc(16384)
+		w("File not found!")
+        sleep(2)
+		r("MineOS/Programs/Documents")
+	  end
+    break
+   end
+  elseif X >= 28 and X <= 28 and Y == 10 then
+    fs.delete(fileRUN8)
+	r("MineOS/Programs/Documents")
+ end
+-- ############################ Slot 9 ############################# --
+    if X >= 32 and X <= 36 and Y == 10 or X >= 32 and X <= 36 and Y == 11 or X >= 32 and X <= 36 and Y == 12 or X >= 32 and X <= 36 and Y == 13 then
+     if fs.exists(fileRUN9) then
+	 resetScreenDoc()
+shell.run("clear")
+sbc(32768)
+      r("MineOS/Programs/Window "..fileRUN9)
+	 else
+         namewindow()
+	fileadd9 = read()
+	  if fileadd9 == "" then
+	    r("MineOS/Programs/Documents")
+	  elseif fs.exists(fileadd9) then
+	  	  sbc(1)
+	    scp(1,17)
+	    fs.copy(fileadd9, fileRUN9)
+		sbc(256)
+		scp(17,7)
+		stc(16384)
+		w("File added!    ")
+        sleep(1)
+		r("MineOS/Programs/Documents")
+	  elseif not fs.exists(fileadd9) then
+	    scp(17,7)
+		stc(16384)
+		w("File not found!")
+        sleep(2)
+		r("MineOS/Programs/Documents")
+	  end
+    break
+   end
+  elseif X >= 37 and X <= 37 and Y == 10 then
+    fs.delete(fileRUN9)
+	r("MineOS/Programs/Documents")
+ end
+-- ############################ Slot 10 ############################# --
+    if X >= 41 and X <= 45 and Y == 10 or X >= 41 and X <= 45 and Y == 11 or X >= 41 and X <= 45 and Y == 12 or X >= 41 and X <= 45 and Y == 13 then
+     if fs.exists(fileRUN10) then
+	 resetScreenDoc()
+shell.run("clear")
+sbc(32768)
+      r("MineOS/Programs/Window "..fileRUN10)
+	 else
+         namewindow()
+	fileadd10 = read()
+	  if fileadd10 == "" then
+	    r("MineOS/Programs/Documents")
+	  elseif fs.exists(fileadd10) then
+	  	  sbc(1)
+	    scp(1,17)
+	    fs.copy(fileadd10, fileRUN10)
+		sbc(256)
+		scp(17,7)
+		stc(16384)
+		w("File added!    ")
+        sleep(1)
+		r("MineOS/Programs/Documents")
+	  elseif not fs.exists(fileadd10) then
+	    scp(17,7)
+		stc(16384)
+		w("File not found!")
+        sleep(2)
+		r("MineOS/Programs/Documents")
+	  end
+    break
+   end
+  elseif X >= 46 and X <= 46 and Y == 10 then
+    fs.delete(fileRUN10)
+	r("MineOS/Programs/Documents")
+ end
+
+ 
+ 
+ 
+end

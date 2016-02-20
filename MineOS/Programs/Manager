@@ -1,0 +1,218 @@
+-- ########################## -- Funktionen -- ############################ -- 
+local function s(...) return sleep(...) end
+local function w(...) return write(...) end
+local function p(...) return print(...) end
+local function tw(...) return term.write(...) end
+local function scp(...) return term.setCursorPos(...) end
+local function sbc(...) return term.setBackgroundColor(...) end
+local function stc(...) return term.setTextColor(...) end
+local function tc(...) return term.clear(...) end
+local function tcl(...) return term.clearLine() end
+local function scb(...) return term.setCursorBlink(...) end
+local function ts(...) return term.scroll(...) end
+local function r(...) return shell.run(...) end
+local function para(...) return parallel.waitForAny(...) end
+local function sw(...) return textutils.slowWrite(...) end
+local function sp(...) return textutils.slowPrint(...) end
+-- ########################## -- Einstellungen -- ############################ -- 
+ghost = "false"
+-- ########################################################################### --
+resetScreen()
+scp(10,2)
+w(" Task Manager     ")
+sbc(16384)
+w("X")
+sbc(256)
+scp(10,3)
+w("                   ")
+scp(10,4)
+w(" -MineOS.exe       ")
+scp(10,5)
+sbc(256)
+w(" -                 ")
+scp(10,6)
+w(" -                 ")
+scp(10,7)
+w(" -                 ")
+scp(10,8)
+w("                   ")
+timeprint1()
+scp(10,4)
+sbc(256)
+w(" -Loading          ")
+USATime = "00:01"
+	USATime = http.get("http://www.timeapi.org/edt/now?format=%25k:%25M")
+	USATime = USATime.readAll()
+scp(10,4)
+sbc(256)
+w(" -Loading.         ")
+DETime = "00:01"
+	DETime = http.get("http://www.timeapi.org/cet/now?format=%25k:%25M")
+	DETime = DETime.readAll()
+scp(10,4)
+sbc(256)
+w(" -Loading..        ")
+ENTime = "00:01"
+	ENTime = http.get("http://www.timeapi.org/utc/now?format=%25k:%25M")
+	ENTime = ENTime.readAll()
+MCTime = "00:00"
+scp(10,4)
+sbc(256)
+w(" -MineOS.exe   [X] ")
+scp(12,5)
+if closetask1 == 0 then
+w(inputrun..".exe")
+end
+if ENTime == " 0:00" or DETime == " 0:00" or USATime == " 0:00" then -- hmm???
+scp(10,5)
+sbc(256)
+stc(1)
+w(" -0:00.exe     [X] ")
+end
+function openmanager1()
+while true do
+  
+            scp(24,5)
+             if closetask1 == 0 then
+			 sbc(256)
+               w(" [X] ")
+             end
+			 s(0.1)
+			
+			
+event, button, X, Y = os.pullEvent("mouse_click")
+  if X >= 8 and X <= 20 and Y == 19 and closetask1 == 0 then
+     openrun()
+	 openrun2()
+  end
+ if X >= 24 and X <= 27 and Y == 5 then
+ closetask1 = 1
+writetask = fs.open("MineOS/Task/task", "w")
+writetask.write([[]])
+writetask.close()
+scp(10,5)
+sbc(256)
+w(" -                 ")
+openmanager1()
+	error("Terminated")
+	break
+ end
+ 
+
+
+if X >= 10 and X <= 23 and Y == 5 and closetask1 == 0 then
+scp(10,5)
+sbc(128)
+w(" -             [X] ")
+scp(12,5)
+if closetask1 == 0 then
+w(inputrun..".exe")
+s(0.2)
+openrun()
+openrun2()
+end
+ end
+ 
+if X >= 10 and X <= 23 and Y == 4 then
+ scp(10,4)
+ sbc(128)
+ w(" -             [X] ")
+ scp(12,4)
+ w("MineOS.exe")
+ s(0.2)
+ r("MineOS/Programs/Desktop")
+	error("Terminated")
+	break
+end
+if X >= 24 and X <= 27 and Y == 4 then
+sleep(0.1)
+	sbc(1)
+	r("clear")
+	s(0.1)
+	sbc(256)
+	r("clear")
+	s(0.1)
+    sbc(128)
+	r("clear")
+	s(0.1)
+    sbc(32768)
+	r("clear")
+	s(0.1)
+p("Run> MineOS.exe")
+s(0.1)
+p("Run> MineOS/Programs/Desktop")
+s(0.1)
+p("Run> MineOS/Programs/Manager")
+s(0.1)
+p("Run> MineOS/Programs/Task")
+s(0.1)
+p("Run> MineOS/Programs/Run")
+s(0.1)
+p("Run> MineOS/Programs/Terminal")
+s(0.1)
+p("Run> MineOS/Programs/Explorer")
+s(0.1)
+p("Run> MineOS/Programs/Browser")
+s(0.1)
+p("Run> MineOS/Programs/Documents")
+    sbc(32768)
+	r("clear")
+	s(0.1)
+	sbc(128)
+	r("clear")
+	s(0.1)
+	sbc(256)
+	r("clear")
+	s(0.1)
+    sbc(1)
+	r("clear")
+	s(0.1)
+ if fs.exists("startup") then
+   fs.makeDir("MineOS/Backup")
+  if fs.exists("MineOS/Backup/startup") then
+   fs.delete("MineOS/Backup/startup")
+  end
+   fs.copy("startup", "MineOS/Backup/startup")
+  if fs.exists("MineOS/Programs/Desktop") then
+   fs.delete("startup")
+   fs.copy("MineOS/Programs/Desktop", "startup")
+   os.reboot()
+  end
+ else
+ r("clear")
+ error("startup does not exist")
+ end
+
+ 
+end
+ 
+ 
+ 
+ if X >= 28 and X <= 28 and Y == 2 then
+   stc(1)
+   resetDesktop()
+   error("Terminated")
+  end
+    if X >= 1 and X <= 6 and Y == 19 then
+       startmenu()
+	   error("Terminated")
+	end
+	
+-- ### hmm?
+
+if ENTime == " 0:00" or DETime == " 0:00" or USATime == " 0:00" then -- hmm???
+if X >= 10 and X <= 23 and Y == 5 then
+image = paintutils.loadImage("MineOS/Texture/bin/File")
+paintutils.drawImage(image, 43, 11)
+ghost = "true"
+end
+
+    if X >= 42 and X <= 51 and Y >= 11 and Y <= 18 and ghost == "true" then -- hmm???
+	r("MineOS/Texture/bin/Folder")
+	error("Terminated")
+	break
+	end
+end
+end
+end
+openmanager1()

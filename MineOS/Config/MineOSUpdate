@@ -1,0 +1,49 @@
+--#########################################################
+ONver = 3.0
+---------------------------------------------------------
+function UPDATING()
+--#########################################################
+
+
+UpdaterL()
+
+
+--#########################################################
+-- # Checklist!
+-- # 1. ONver auf neuste Version setzen!
+-- # 2. If check auf die neuste Version setzen!
+end
+---------------------------------------------------------
+version = fs.open("MineOS/Config/OSversion", "r")
+OSver = version.readLine()
+version.close()
+---------------------------------------------------------
+--#########################################################
+if OSver == "1.0" then
+--#########################################################
+write("MineOS is up to date!")
+term.setCursorPos(31,2)
+write("Version           ")
+write(OSver)
+else
+version = fs.open("MineOS/Config/OSversion", "w")
+version.write(ONver)
+version.close()
+---------------------------------------------------------
+shell.run("clear")
+term.setCursorPos(1,1)
+write("New MineOS Version!")
+term.setCursorPos(1,2)
+print("Updating..")
+print("")
+print("Old version: ".. OSver)
+print("New version: ".. ONver)
+print("")
+print("Update by MineStudio")
+sleep(3)
+term.setCursorPos(1,4)
+write("Reboot!")
+UPDATING()
+os.reboot()
+end
+---------------------------------------------------------

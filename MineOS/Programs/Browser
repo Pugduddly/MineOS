@@ -1,0 +1,261 @@
+-- ########################## -- Funktionen -- ############################ -- 
+local function s(...) return sleep(...) end
+local function w(...) return write(...) end
+local function p(...) return print(...) end
+local function tw(...) return term.write(...) end
+local function scp(...) return term.setCursorPos(...) end
+local function sbc(...) return term.setBackgroundColor(...) end
+local function stc(...) return term.setTextColor(...) end
+local function tc(...) return term.clear(...) end
+local function tcl(...) return term.clearLine() end
+local function scb(...) return term.setCursorBlink(...) end
+local function ts(...) return term.scroll(...) end
+local function r(...) return shell.run(...) end
+local function para(...) return parallel.waitForAny(...) end
+local function sw(...) return textutils.slowWrite(...) end
+local function sp(...) return textutils.slowPrint(...) end
+-- ########################## -- Einstellungen -- ############################ -- 
+browsepath = "http://"
+version = "1.1"
+Pname = "Browser"
+-- ########################################################################### -- 
+ sbc(1)
+ r("clear")
+ sbc(2048)
+ scp(1,1)
+ write("                                                    ")
+ scp(1,2)
+  sbc(256)
+ write("                                                    ")
+ sbc(2048)
+ scp(1,1)
+ stc(1)
+ write(Pname.." "..version)
+ sbc(256)
+ scp(1,2)
+ stc(32768)
+ write(browsepath)
+ scp(51,1)
+ stc(1)
+ sbc(16384)
+ write("X")
+ stc(1)
+ sbc(8192)
+ scp(1,19)
+ w([[ Start ]])
+ sbc(2048)
+ w([[                                              ]])
+function browsetab()
+ timeprint1()
+    scp(8,19)
+   sbc(8)
+r("MineOS/Task/task")
+ sbc(256)
+ stc(32768)
+ scp(8,2)
+ w("                                   ")
+ sbc(1)
+ for LoadpageE=3,10 do
+ scp(1,LoadpageE)
+ write("                                                    ")
+end
+-- ######################## Update Log #################### --
+scp(2,6)
+w("URLs:")
+scp(2,7)
+w("- YouTube.com      [Subsviewer]")
+scp(2,8)
+w("- MineStore.com    [MineStore]")
+scp(1,9)
+p("                                                     ")
+p("  NEW APPS -> MineStore                              ")
+p("                                                     ")
+p("                                                     ")
+p("                                                     ")
+p("                                                     ")
+p("                                                     ")
+p("                                                     ")
+p("                                                     ")
+scp(1,18)
+w("More coming soon!")
+-- ######################################################## --
+sbc(256)
+scp(8,2)
+browsepath = read()
+scp(20,4)
+sbc(1)
+
+for LoadpageE=3,10 do
+ scp(1,LoadpageE)
+ write("                                                    ")
+end
+sbc(32)
+scp(1,3)
+for LoadpageT=0,5 do
+w("         ")
+sleep(0,1)
+end
+sbc(1)
+scp(1,3)
+write("                                                    ")
+-- ############################### Links ################################ --
+-- #################### YouTube #################### --
+if browsepath == "youtube.com" or browsepath == "youtube.de" or browsepath == "YouTube.com" or browsepath == "Youtube.com" then
+   scp(8,2)
+   sbc(256)
+   w("youtube.com/user/")
+   YouTubeNameURL = read()
+   sbc(1)
+      if YouTubeNameURL == "LabyStudio" or YouTubeNameURL == "Labystudio" or YouTubeNameURL == "labystudio" then
+	   YouTubeNameURL = "DanielLaby99"
+	  end
+function loadback2()	  
+sbc(32)
+scp(1,3)
+for LoadpageT=0,16 do
+w("   ")
+sleep(0,1)
+end
+sleep(5)
+scp(2,5)
+stc(32768)
+sbc(1)
+w("The connection was interrupted!")
+scp(2,7)
+write("The connection to")
+scp(2,8)
+write("http://youtube.com/user/"..YouTubeNameURL)
+scp(1,3)
+sbc(1)
+w("                                                          ")
+scp(2,9)
+write("was interrupted while the page was loading.")
+scp(2,11)
+write("The site could be temporarily unavailable")
+scp(2,12)
+write("or too busy. Try again in a few moments.")
+
+scp(2,14)
+write("If you are unable to load any pages,")
+scp(2,15)
+write("check your computer's network connection.")
+end 
+	function loadback1()
+	local page = http.get("http://www.youtube.com/user/"..YouTubeNameURL)
+	sbc(1)
+	scp(1,3)
+	local text = page.readAll()
+
+scp(1,3)
+write("                                                    ")
+	scp(2,4)
+	w("You")
+	sbc(16384)
+	stc(1)
+	w("Tube")
+	sbc(1)
+	stc(32768)
+	scp(2,6)
+	w(YouTubeNameURL)
+	scp(30,6)
+	write("Subscriber>")
+   write(" "..text:match([[subscribed"%s->([^<]*)]]))
+  scp(1,5)
+  w("---------------------------------------------------")
+  scp(1,3)
+     browsepath = browsepath.."/user/"..YouTubeNameURL
+	end
+para(loadback1, loadback2)
+-- #################### MineStore #################### --
+elseif browsepath == "MineStore.com" or browsepath == "Minestore.com" or browsepath == "minestore.com" then
+   scp(20,4)
+    w("MineStore BETA")
+  scp(1,5)
+  w("---------------------------------------------------")
+  scp(1,6)
+  w("> Skype [Download]")
+  scp(1,7)
+  w("")
+  
+ while true do
+  event, button, X, Y = os.pullEvent("mouse_click")
+  if X >= 1 and X <= 51 and Y == 6 then
+    scp(1,6)
+	if not fs.exists("Skype") then
+     write("Downloading..          ")
+      fs.copy("MineOS/Documents/admin/MineStore/apps/Skype", "Skype")
+	    sleep(1)
+       scp(1,6)
+	    write("Downloaded!   ")
+	    sleep(1)
+       scp(1,6)
+	   write("Saved as 'Skype'")
+       scp(1,7)
+	   write("Go to your documents, click on a free slot and enter 'Skype' or you can run the program with Run/CraftOS")
+	   sleep(5)
+	 else
+	   write("File already downloaded.")
+	   sleep(1)
+	 end
+	 sleep(1)
+     browsetab()
+   error("Terminated")
+   break
+  end
+  if X >= 1 and X <= 51 and Y == 2 then
+   browsetab()
+   error("Terminated")
+   break
+  end
+  if X >= 1 and X <= 7 and Y == 19 then
+   startmenu()
+   error("Terminated")
+  break
+  end
+  if X >= 51 and X <= 51 and Y == 1 then
+   resetDesktop()
+   error("Terminated")
+  break
+  end
+end
+  
+-- #################### Localhost #################### --
+elseif browsepath == "localhost" or browsepath == "0.0.0.0" or browsepath == "*.*.*.*" then
+   scp(20,4)
+    w("Localhost")
+  scp(1,5)
+  w("This is a test")
+  scp(1,6)
+  w("In the next update:")
+  scp(1,7)
+  w("A own Internet page! You can create a design and custom content on your webiste. Im working for a http conection. You can upload this content on my server and other guys can go on your webiste!")
+  print("But I need a server for uploading this stuff :/")
+  print("Can you help?")
+  print("")
+  print("'This is a easter egg :D'")
+-- ################################################ --
+end
+
+
+ while true do
+  event, button, X, Y = os.pullEvent("mouse_click")
+  if X >= 1 and X <= 51 and Y == 2 then
+   browsetab()
+   error("Terminated")
+   break
+  end
+  if X >= 1 and X <= 7 and Y == 19 then
+   startmenu()
+   error("Terminated")
+  break
+  end
+  if X >= 51 and X <= 51 and Y == 1 then
+   resetDesktop()
+   error("Terminated")
+  break
+  end
+  
+
+ end
+end
+browsetab()

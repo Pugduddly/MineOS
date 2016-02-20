@@ -1,0 +1,1319 @@
+--[[
+		Mouse File Browser
+		by:
+			Stiepen irc(Kilobyte)
+			Cruor
+			BigSHinyToys
+		
+		note: send link to nightin9ale on CC forums
+		
+		Edited for MineOS by Evan Carlson
+--]]
+
+local tArgs = {...}
+local ver = "1.4"
+local sTitle = "File Browser"
+local bugTest, norun, dir, showAll
+local _tArgs = {}
+local config = "MineOS/Config/explorer.cfg"
+
+local temp
+if shell and shell.getRunningProgram then
+	temp = shell.getRunningProgram()
+end
+
+temp = temp or "/bla"
+local localPath = string.sub(temp,1,#temp-string.len(fs.getName(temp)))
+temp = nil -- just because not needed
+
+-- load config file
+
+local configSet = {}
+local cnf = {}
+
+if fs.exists(localPath.."/"..config) then
+	local file = fs.open(localPath.."/"..config,"r")
+	if file then
+		local item = file.readLine()
+		while item do
+			table.insert(cnf,item)
+			item = file.readLine()
+		end
+		file.close()
+	end	
+end
+
+for i = 1,10 do
+	local test,data = pcall(textutils.unserialize,cnf[i])
+	if test then
+		configSet[i] = data
+	else
+		configSet[i] = nil
+	end
+end
+cnf = nil
+
+-- color configuration work in progress
+local titleBar = configSet[1] or {txt = colors.black,back = colors.blue}
+local addressBar = configSet[2] or {txt = colors.black,back = colors.lightGray}
+local itemWindo = configSet[3] or {txt = colors.black,back = colors.cyan}
+local rcmList = configSet[4] or {txt = colors.black,back = colors.lightGray} -- rcm = Right Click Menu List
+local rcmTitle = configSet[5] or {txt = colors.black,back = colors.blue}
+local dialogTitle = configSet[6] or {txt = colors.black,back = colors.blue}
+local dialogWindo = configSet[7] or {txt = colors.black,back = colors.white}
+local scrollCol = configSet[8] or {off = colors.gray, button = colors.gray,back = colors.lightGray}
+
+local tIcons = configSet[9] or {
+	back = {tCol = "lightGray",bCol = "blue",txt = " < "},
+	disk = {tCol = "lime",bCol = "green",txt = "[*]"},
+	audio = {tCol = "yellow",bCol = "red",txt = "(o)"},
+	folder = {tCol = "lightGray",bCol = "blue",txt = "[=]"},
+	file = {tCol = nil ,bCol = nil ,txt = nil}
+}
+
+local customLaunch = configSet[10] or {
+	["Edit"] = "rom/programs/edit",
+	["Paint"] = "rom/programs/color/paint"
+}
+
+local function saveCFG(overWrite)
+	if not fs.exists(localPath.."/"..config) or overWrite then
+		local cnf = {}
+		local file = fs.open(localPath.."/"..config,"w")
+		if file then
+			file.write(textutils.serialize(titleBar).."\n")
+			file.write(textutils.serialize(addressBar).."\n")
+			file.write(textutils.serialize(itemWindo).."\n")
+			file.write(textutils.serialize(rcmList).."\n")
+			file.write(textutils.serialize(rcmTitle).."\n")
+			file.write(textutils.serialize(dialogTitle).."\n")
+			file.write(textutils.serialize(dialogWindo).."\n")
+			file.write(textutils.serialize(scrollCol).."\n")
+			file.write(textutils.serialize(tIcons).."\n")
+			file.write(textutils.serialize(customLaunch).."\n")
+			file.close()
+		elseif overWrite then
+		end
+	end
+end
+
+saveCFG()
+
+-- end configuration
+
+local function help()
+	print([[Usage: browser [-d] [-h] [-a] [-u] [--debug] [--help] [--dir <dir>] [--all] [--update]
+--debug or -d: enable debug mode
+--help or -h: display this screen
+--dir: define initial directory
+--all or -a: show hidden files
+--update -u: update]])
+end
+
+local function inBouwndry(clickX,clickY,boxX,boxY,width,hight)
+	return ( clickX >= boxX and clickX < boxX + width and clickY >= boxY and clickY < boxY + hight )
+end
+
+local function update()
+	print("Checking for Updates")
+	local isHTTP = false
+	local response
+	if http then
+		isHTTP = true
+		print("http on")
+		response = http.get("http://pastebin.com/raw.php?i=rLbnyM1U")
+	end
+	local flag = false
+	local isNewFlag = false
+	local newVerID
+	if response and isHTTP then
+		print("recived")
+		local sInfo = response.readLine()
+		print(sInfo)
+		while sInfo do
+			print(sInfo)
+			if flag then
+				if sInfo == ver then
+					print("Mouse File Browser is up to date")
+					break
+				else
+					newVerID = sInfo
+					flag = false
+					isNewFlag = true
+				end
+			elseif sInfo == sTitle then
+				flag = true
+			elseif isNewFlag then
+				isNewFlag = sInfo
+				response.close()
+				break
+			end
+			sInfo = response.readLine()
+		end
+		if isNewFlag then
+			print("New vershion avalible "..newVerID)
+			print('downloading to \Browser')
+			if fs.exists("Browser") then
+				write("Browser exists OverWrite Browser Y/N : ")
+				local input = string.lower(read())
+				while input ~= "y" and input ~= "n" do
+					print("y or n required")
+					input = string.lower(read())
+				end
+				if input == "y" then
+					print("Over Writeing Browser")
+					print("Downloading new File")
+					local response = http.get("http://pastebin.com/raw.php?i="..isNewFlag)
+					if response then
+						print("file downloaded")
+						print("installing")
+						fs.delete("Browser")
+						local handel = fs.open("Browser","w")
+						if handel then
+							handel.write(response.readAll())
+							handel.close()
+							print("Update Complete")
+						end
+						response.close()
+					end
+				else
+					print("Update aborted")
+				end
+			else
+				print("Downloading new File")
+				local response = http.get("http://pastebin.com/raw.php?i="..isNewFlag)
+				if response then
+					print("file downloaded")
+					print("installing")
+					local handel = fs.open("Browser","w")
+					if handel then
+						handel.write(response.readAll())
+						handel.close()
+						print("Update Complete")
+					end
+					response.close()
+				end
+			end
+		end
+	elseif isHTTP then
+		print("Error downloading update file Please contact BigSHinyToys on the CC forums")
+		print("http://www.computercraft.info/forums2/index.php?/topic/5509-advanced-computer-mouse-file-browser/")
+	elseif not isHTTP then
+		print("HTTP API is turned off")
+		print("Access Computer Craft Configer and change line")
+		print([[enableapi_http {
+# Enable the "http" API on Computers
+general=false
+}
+TO THIS :
+enableapi_http {
+# Enable the "http" API on Computers
+general=true
+}]])
+	end
+	notCMD = false
+	norun = true
+end
+
+for a = 1, #tArgs do
+	if tArgs[a]:sub(1,2) == "--" then
+		local cmd = tArgs[a]:sub(3):lower()
+		if cmd == "debug" then
+			bugTest = true
+		elseif cmd == "help" then
+			help()
+			norun = true
+		elseif cmd == "dir" then
+			dir = tArgs[a+1]
+			a = a + 1
+		elseif cmd == "all" then
+			showAll = true
+		elseif cmd == "update" then
+			update()
+		end
+	elseif tArgs[a]:sub(1,1) == "-" then
+		for b = 2, #tArgs[a] do
+			cmd = tArgs[a]:sub(b, b)
+			if cmd == "d" then
+				bugTest = true
+			elseif cmd == "h" then
+				help()
+				norun = true
+			elseif cmd == "p" then
+				dir = tArgs[a+1]
+				a = a + 1
+			elseif cmd == "a" then
+				showAll = true
+			elseif cmd == "u" then
+				update()
+			end
+		end
+	else
+		table.insert(_tArgs, tArgs[a])
+	end
+end
+
+if (not dir) and shell and shell.dir then
+	dir = shell.dir()
+end
+
+if dir and shell and shell.resolve then
+	dir = shell.resolve(dir)
+end
+
+dir = dir or "/"
+
+if bugTest then -- this is that the var is for testing
+	print("Dir: "..dir)
+	os.startTimer(4)
+	os.pullEvent()
+end
+
+local function clear()
+	term.setBackgroundColor(colors.black)
+	term.setTextColor(colors.white)
+	term.clear()
+	term.setCursorBlink(false)
+	term.setCursorPos(1,1)
+end
+
+--[[
+		Code thanks to Cruor 
+		http://www.computercraft.info/forums2/index.php?/topic/5802-support-for-shell/
+]]--
+
+local function fixArgs(...)
+	local tReturn={}
+	local str=table.concat({...}," ")
+	local sMatch
+	while str and #str>0 do
+		if string.sub(str,1,1)=="\"" then
+			sMatch, str=string.match(str, "\"(.-)\"%s*(.*)")
+		else
+			sMatch, str=string.match(str, "(%S+)%s*(.*)")
+		end
+		table.insert(tReturn,sMatch)
+	end
+	return tReturn
+end
+
+--[[ end Cruor function ]]--
+
+
+-- modified read made to play nice with coroutines
+
+local function readMOD( _sReplaceChar, _tHistory,_wdth)
+	local sLine = ""
+	term.setCursorBlink( true )
+
+	local nHistoryPos = nil
+	local nPos = 0
+    if _sReplaceChar then
+		_sReplaceChar = string.sub( _sReplaceChar, 1, 1 )
+	end
+	
+	local sx, sy = term.getCursorPos()	
+
+	local w, h = term.getSize()
+	if _wdth and type(_wdth) == "number" then
+		w = sx + _wdth - 1
+	end
+	
+	local function redraw( _sCustomReplaceChar )
+		local nScroll = 0
+		if sx + nPos >= w then
+			nScroll = (sx + nPos) - w
+		end
+			
+		term.setCursorPos( sx + _wdth - 1, sy )
+		term.write(" ")
+		term.setCursorPos( sx, sy )
+		local sReplace = _sCustomReplaceChar or _sReplaceChar
+		if sReplace then
+			term.write( string.rep(sReplace,_wdth) )
+		else
+			term.write( string.sub( sLine, nScroll + 1 ,nScroll + _wdth) )
+		end
+		term.setCursorPos( sx + nPos - nScroll, sy )
+	end
+	
+	while true do
+		local sEvent, param = os.pullEvent()
+		if sEvent == "char" then
+			sLine = string.sub( sLine, 1, nPos ) .. param .. string.sub( sLine, nPos + 1 )
+			nPos = nPos + 1
+			redraw()
+			
+		elseif sEvent == "key" then
+			
+			if param == keys.left then
+				-- Left
+				if nPos > 0 then
+					nPos = nPos - 1
+					redraw()
+				end
+				
+			elseif param == keys.right then
+				-- Right				
+				if nPos < string.len(sLine) then
+					nPos = nPos + 1
+					redraw()
+				end
+			
+			elseif param == keys.up or param == keys.down then
+                -- Up or down
+				if _tHistory then
+					redraw(" ");
+					if param == keys.up then
+						-- Up
+						if nHistoryPos == nil then
+							if #_tHistory > 0 then
+								nHistoryPos = #_tHistory
+							end
+						elseif nHistoryPos > 1 then
+							nHistoryPos = nHistoryPos - 1
+						end
+					else
+						-- Down
+						if nHistoryPos == #_tHistory then
+							nHistoryPos = nil
+						elseif nHistoryPos ~= nil then
+							nHistoryPos = nHistoryPos + 1
+						end						
+					end
+					
+					if nHistoryPos then
+                    	sLine = _tHistory[nHistoryPos]
+                    	nPos = string.len( sLine ) 
+                    else
+						sLine = ""
+						nPos = 0
+					end
+					redraw()
+                end
+			elseif param == keys.backspace then
+				-- Backspace
+				if nPos > 0 then
+					redraw(" ");
+					sLine = string.sub( sLine, 1, nPos - 1 ) .. string.sub( sLine, nPos + 1 )
+					nPos = nPos - 1					
+					redraw()
+				end
+			elseif param == keys.home then
+				-- Home
+				nPos = 0
+				redraw()		
+			elseif param == keys.delete then
+				if nPos < string.len(sLine) then
+					redraw(" ");
+					sLine = string.sub( sLine, 1, nPos ) .. string.sub( sLine, nPos + 2 )				
+					redraw()
+				end
+			elseif param == keys["end"] then
+				-- End
+				nPos = string.len(sLine)
+				redraw()
+			end
+		elseif sEvent == "redraw" then
+			redraw()
+		elseif sEvent == "return" then
+			term.setCursorBlink( false )
+			return sLine
+		end
+	end
+	
+	term.setCursorBlink( false )
+	
+	return sLine
+end
+
+-- end modified read
+
+local function printC(posX,posY,textCol,backCol,text)
+	term.setCursorPos(posX,posY)
+	term.setTextColor(colors[textCol] or textCol)
+	term.setBackgroundColor(colors[backCol] or backCol)
+	term.write(text)
+end
+
+local function InputBox(title)
+	local boxW,boxH = 26,3
+	local termX,termY = term.getSize()
+	local ofsX,ofsY = math.ceil((termX/2) - (boxW/2)) , math.ceil((termY/2) - (boxH/2)) -- offset from top left
+	local options = {"ok","cancel"}
+	
+	local selected = 1
+	local space = 0
+	local range = {}
+	for i = 1,#options do
+		range[i] = {s = space,f = space + string.len(options[i])}
+		space = space + string.len(options[i])+3
+	end
+	local ofC = (boxW/2) - (space/2)
+	
+	local function drawBox()
+		printC(ofsX,ofsY,colors.black,colors.blue,string.rep(" ",boxW))
+		printC(ofsX+1,ofsY,colors.black,colors.blue,(title or "User Input"))
+		printC(ofsX,ofsY+1,colors.black,colors.white,string.rep(" ",boxW))
+		printC(ofsX,ofsY+2,colors.black,colors.white,string.rep(" ",boxW))
+		printC(ofsX,ofsY+3,colors.black,colors.white,string.rep(" ",boxW))
+		
+		for i = 1,#options do
+			if i == selected then
+				term.setBackgroundColor(colors.lightGray)
+				term.setCursorPos(range[i].s + ofC + ofsX - 1,ofsY + 3)
+				term.write("["..options[i].."]")
+				term.setBackgroundColor(colors.white)
+				term.write(" ")
+			else
+				term.setCursorPos(range[i].s + ofC + ofsX - 1,ofsY + 3)
+				term.write(" "..options[i].." ")
+			end
+		end
+		
+		printC(ofsX+2,ofsY+2,colors.black,colors.lightGray,string.rep(" ",boxW-4))
+	end
+	drawBox()
+	term.setCursorPos(ofsX+2,ofsY+2)
+	local co = coroutine.create(function() return readMOD(nil,nil,boxW - 4) end)
+	while true do
+		local event = {os.pullEvent()}
+		if event[1] == "key" or event[1] == "char" then
+			if event[2] == 28 then
+				local test,data = coroutine.resume(co,"return")
+				return data
+			else
+				coroutine.resume(co,unpack(event))
+			end
+		elseif event[1] == "mouse_click" then
+			if event[4] == ofsY + 3 then
+				for i = 1,#options do
+					if event[3] >= range[i].s + ofC + ofsX - 1 and event[3] <= range[i].f + ofC + ofsX then
+						if options[i] == "ok" then
+							local test,data = coroutine.resume(co,"return")
+							return data
+						elseif options[i] == "cancel" then
+							return false
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+local function dialogBox(title,message,options, h, w)
+	term.setCursorBlink(false)
+	local selected = 1
+	title = title or ""
+	message = message or ""
+	options = options or {}
+	local boxW,boxH = (w or 26), (h or 3)
+	local termX,termY = term.getSize()
+	local ofsX,ofsY = math.ceil((termX/2) - (boxW/2)) , math.ceil((termY/2) - (boxH/2)) -- offset from top left
+	
+	local space = 0
+	local range = {}
+	for i = 1,#options do
+		range[i] = {s = space,f = space + string.len(options[i])}
+		space = space + string.len(options[i])+3
+	end
+	local ofC = math.ceil((boxW/2)) - math.ceil((space/2))
+	
+	local function drawBox()
+--		printC(ofsX,ofsY,dialogTitle.txt,dialogTitle.back," "..title..string.rep(" ",boxW-#title-5).."_[]")
+		printC(ofsX,ofsY,dialogTitle.txt,dialogTitle.back," "..title..string.rep(" ",boxW-#title-5).."   ")
+		term.setBackgroundColor(colors.red)
+		term.setTextColor(colors.white)
+		term.write("X")
+		printC(ofsX,ofsY+1,dialogWindo.txt,dialogWindo.back,string.sub(" "..message..string.rep(" ",boxW),1,boxW))
+		term.setCursorPos(ofsX,ofsY+2)
+		term.write(string.rep(" ",boxW))
+		term.setCursorPos(ofsX,ofsY+3)
+		term.write(string.rep(" ",boxW))
+		for i = 1,#options do
+			if i == selected then
+				printC(range[i].s + ofC + ofsX - 1,ofsY + 3,"black","lightGray","["..options[i].."]")
+				term.setBackgroundColor(dialogWindo.back)
+				term.setTextColor(dialogWindo.txt)
+				term.write(" ")
+			else
+				term.setCursorPos(range[i].s + ofC + ofsX - 1,ofsY + 3)
+				term.write(" "..options[i].." ")
+			end
+		end
+		term.setCursorPos(ofsX + ofC + space,ofsY + 3)
+		term.write(string.rep(" ",boxW - (ofC + space)))
+		term.setBackgroundColor(colors.black)
+		term.setTextColor(colors.white)			
+	end
+	while true do
+		drawBox()
+		event = {os.pullEvent()}
+		if event[1] == "key" then
+			if event[2] == 203 then -- left
+				selected = selected - 1
+				if selected < 1 then
+					selected = #options
+				end
+			elseif event[2] == 205 then -- right
+				selected = selected + 1
+				if selected > #options then
+					selected = 1
+				end
+			elseif event[2] == 28 then -- enter
+				return selected , options[selected]
+			end
+		elseif event[1] == "mouse_click" then
+			
+			if bugTest then term.write("M "..event[2].." X "..event[3].." Y "..event[4].."    ") end
+			
+			if event[2] == 1 then
+				if event[4] == ofsY + 3 then
+					for i = 1,#options do
+						if event[3] >= range[i].s + ofC + ofsX - 1 and event[3] <= range[i].f + ofC + ofsX then
+							return i , options[i]
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+local flag = true
+local fSlash = "/"
+local path = {dir:match("[^/]+")}
+local function stringPath() -- compacted this a lot
+	return fSlash..table.concat(path,fSlash)
+end
+
+local function osRunSpaces(sFileLocation,...) -- getRunningProgram() ["shell"] = shell
+	shell.run("MineOS/Programs/Window "..sFileLocation)
+--[[
+	clear()
+	if os.newThread then
+		os.newThread(false,...)
+	else
+	local fProg,probblem = loadfile(sFileLocation)
+		if fProg then
+			local tEnv = {["shell"] = {}}
+			setmetatable(tEnv.shell,{ __index = shell})
+			tEnv.shell.getRunningProgram = function()
+				return sFileLocation
+			end
+			setmetatable(tEnv,{ __index = _G})
+			setfenv(fProg,tEnv)
+			local test,probblem = pcall(fProg,...)
+			if not test then
+				print(probblem)
+				dialogBox("ERROR",tostring(probblem),{"ok"},3,30)
+			else
+				return true
+			end
+		else
+			print(probblem)
+			dialogBox("ERROR",tostring(probblem),{"ok"},3,30)
+		end
+	end
+]]--
+end
+
+local function rClickMenu(title,tList,tItem,posX,posY)
+
+	term.setCursorBlink(false)
+	local BoxTitle = title
+	local choices = {}
+	local termX,termY = term.getSize()
+	local offX,offY
+	
+	local width = #BoxTitle + 2
+	local hight
+	
+	for k,v in pairs(tList) do
+		if v ~= nil then
+			table.insert(choices,k)
+		end
+		if width < #k + 2 then
+			width = #k + 2
+		end
+	end
+	
+	if #choices == 0 then
+		return
+	end
+	
+	hight = #choices + 1
+	table.sort(choices)
+	
+	offX,offY = math.ceil((termX/2) - (width/2)),math.ceil((termY/2) - (hight/2))
+	
+	if posX and posY then -- offX,offY = posX,posY
+		if posX >= termX - width - 1 then
+			offX = termX - width - 1
+		else
+			offX = posX
+		end
+		if posY >= termY - hight then
+			offY = termY - hight
+		else
+			offY = posY
+		end
+	end
+	
+	local function reDrawer()
+		printC(offX,offY,rcmTitle.txt,rcmTitle.back," "..BoxTitle..string.rep(" ",width - #BoxTitle - 1))
+		for i = 1,#choices do
+			printC(offX,offY + i,rcmList.txt,rcmList.back," "..choices[i]..string.rep(" ",width - #choices[i] - 1))
+		end
+	end
+	
+	while true do
+		reDrawer()
+		local event = {os.pullEvent()}
+		if event[1] == "mouse_click" then
+			if event[2] == 1 then -- event[3] = x event[4] = y
+				if event[4] > offY and event[4] < hight + offY and event[3] >= offX and event[3] < width + offX then
+					--dialogBox("ERROR:",type(tList[choices[event[4] - offY]]),{"ok"})
+					if type(tList[choices[event[4] - offY]]) == "function" then
+						return tList[choices[event[4] - offY]](tItem)
+					elseif type(tList[choices[event[4] - offY]]) == "table" then
+						return rClickMenu("Options",tList[choices[event[4] - offY]],tItem,event[3],event[4])
+					elseif type(tList[choices[event[4] - offY]]) == "string" then
+						return osRunSpaces(
+								unpack(
+									fixArgs(
+										tList[choices[event[4] - offY]].." \""..stringPath()..fSlash..tItem.n.."\""
+									)
+								)
+							)
+					else
+						dialogBox("ERROR:","something up with new rMenu",{"ok"})
+					end
+				else
+					return
+				end
+			elseif event[2] == 2 then
+				return
+			end
+		end
+	end
+	
+end
+
+local function preferences()
+	local tItem = {
+		{txt = "Title Bar",it = titleBar},
+		{txt = "Address Bar",it = addressBar},
+		{txt = "Item Window", it = itemWindo},
+		{txt = "Title Right Click Title",it = rcmTitle},
+		{txt = "Right Click Menu",it = rcmList},
+		{txt = "Title Dialog Box",it = dialogTitle},
+		{txt = "Dialog Box",it = dialogWindo},
+		{txt = "Scroll Bar",it = scrollCol}
+	}
+	local topL,topR = 13,5
+	local width,hight = 23,6
+	local bottomL,bottomR = topL + width,topR + hight
+	
+	local listOffset = 0
+	local sel = 1
+	local otherSel = 1
+	local otherItems = {}
+	
+	if tItem[sel] then
+		for k,v in pairs(tItem[sel].it) do
+			table.insert(otherItems,{txt = k,it = v})
+		end
+	end
+	
+	local function draw()
+		printC(topL,topR,titleBar.txt,titleBar.back,string.sub(" Preferences "..string.rep(" ",width),1,width))
+		for i = 0,12,4 do
+			for a = 1,4 do
+				--printC(topL + (a*12)-12 ,topR + ((i+4)/4),4,2^(a+i-1)," "..tostring(2^(a+i-1)))
+				printC(topL + a-1 ,topR + ((i+4)/4),4,2^(a+i-1)," ")
+			end
+		end
+		local sSel = " "
+		for i = 1,hight - 2 do
+			if i == sel - listOffset then
+				sSel = ">"
+			end
+			if tItem[i+listOffset] then
+				printC(topL + 4 ,topR + i,colors.black,colors.white,string.sub(sSel..tItem[i+listOffset].txt..string.rep(" ",width),1,width - 4))
+			else
+				printC(topL + 4 ,topR + i,colors.black,colors.white,sSel..string.rep(" ",width-5))
+			end
+			if i == sel - listOffset then
+				sSel = " "
+			end
+		end
+		term.setCursorPos(topL,topR + hight - 1)
+		local loop = 1
+		local length = 0
+			for i = 1,#otherItems do
+				if otherSel == i then
+					sSel = ">"
+				end
+				if colors.black == otherItems[i].it or colors.gray == otherItems[i].it then
+					term.setTextColor(colors.white)
+				else
+					term.setTextColor(colors.black)
+				end
+				term.setBackgroundColor(otherItems[i].it)
+				term.write(sSel..tostring(otherItems[i].txt).." ")
+				length = length + #otherItems[i].txt + 2
+				if otherSel == i then
+					sSel = " "
+				end
+				loop = loop+1
+			end
+		term.setBackgroundColor(colors.white)
+		term.write(string.rep(" ",width - length))
+	end
+	while true do
+		draw()
+		local event = {os.pullEvent()}
+		if event[1] == "mouse_click" and event[2] == 1 then
+			if inBouwndry(event[3],event[4],topL,topR,width,hight) then
+				local inSideX,inSideY = event[3] - topL,event[4] - topR
+				if inBouwndry(inSideX+1,inSideY,1,1,4,4) and tItem[sel] then
+					--[[
+					term.setCursorPos(1,1)
+					term.setBackgroundColor(2^(inSideX + ((inSideY*4)-4)))
+					print(2^(inSideX + ((inSideY*4)-4))," ",inSideX + ((inSideY*4)-4),"     ")
+					]]--
+					tItem[sel]["it"][otherItems[otherSel].txt] = (2^(inSideX + ((inSideY*4)-4)))
+				end
+			end
+		elseif event[1] == "key" then
+			if event[2] == 200 then
+				sel = sel - 1
+			elseif event[2] == 208 then
+				sel = sel + 1
+			elseif event[2] == 203 then
+				otherSel = otherSel - 1
+			elseif event[2] == 205 then
+				otherSel = otherSel + 1
+			elseif event[2] == 28 then
+				if dialogBox("Confirm","Save preferences?",{"Yes","No"}) == 1 then
+					saveCFG(true)
+				end
+				return
+			end
+		end
+		if sel < 1 then
+			sel = 1
+		elseif sel > #tItem then
+			sel = #tItem
+		end
+		if sel > listOffset + hight - 2 then
+			listOffset = listOffset + 1
+		elseif sel - listOffset < 1 then
+			listOffset = listOffset - 1
+		end
+		
+		otherItems = {}
+		if tItem[sel] then
+			for k,v in pairs(tItem[sel].it) do
+				table.insert(otherItems,{txt = k,it = v})
+			end
+		end
+		
+		if otherSel < 1 then
+			otherSel = 1
+		elseif otherSel > #otherItems then
+			otherSel = #otherItems
+		end
+		
+		if bugTest then
+			term.setBackgroundColor(colors.black)
+			term.setTextColor(colors.white)
+			term.setCursorPos(1,1)
+			term.clearLine()
+			term.write("sel "..sel.." offset "..listOffset)
+		end
+	end
+end
+
+local function fileSelect(mode) -- save_file open_file browse < not yet implemented
+	
+	local title = sTitle.." "..ver
+	local bRun = true
+	local clipboard = nil
+	local cut = false
+	
+	local termX,termY = term.getSize()
+	local offsetX,offsetY = 1,1
+	local hight,width = math.ceil(termY-2),math.ceil(termX-2)
+	local oldHight,oldWidth
+	
+	-- offsets
+	local boxOffX,boxOffY = offsetX,offsetY + 2
+	local boxH,boxW = hight - 2 ,width - 2
+	
+	local barX,barY = offsetX + 1,offsetY + 2
+	local barH,barW = 1,width - 1
+	
+	local tbarX,tbarY = offsetX + 1,offsetY + 1
+	local tbarH,tbarW = 1,width - 1
+	
+	local exitX,exitY = offsetX + width - 1 ,offsetY + 1
+	
+	local pading = string.rep(" ",boxW)
+	local list
+	
+	local listOff = 0
+	
+	local sPath
+	local tItemList = {}
+	
+	local function newList()
+		listOff = 0
+		flag = true
+		tItemList = {{n = "..", id = "back"}} -- adds a back item at top of list
+		sPath = stringPath()
+		local folders = {}
+		local files = {}
+		local disks = {}
+		if not fs.exists(sPath) then
+			path = {}
+			sPath = stringPath()
+			dialogBox("ERROR:","Path no longer exists",{"ok"})
+		end
+		local test,list = pcall(fs.list,sPath) -- stopes fs.list crash
+		if list == nil then
+			list = {}
+			dialogBox("ERROR : ","fs.list crashed",{"ok"})
+		end
+		if #path == 0 then
+			for i,v in pairs(rs.getSides()) do
+				if disk.isPresent(v) then
+					if disk.hasData(v) then
+						table.insert(tItemList,{n = disk.getMountPath(v), id = "disk",s = v})
+						disks[disk.getMountPath(v)] = true
+					elseif disk.hasAudio(v) then
+						table.insert(tItemList,{n = disk.getAudioTitle(v), id = "audio",s = v})
+					end
+				end
+			end
+		end
+		for i,v in pairs(list) do
+			if fs.isDir(sPath..fSlash..v) then
+				table.insert(folders,v)
+			else
+				table.insert(files,v)
+			end
+		end
+		table.sort(folders)
+		table.sort(files)
+		for i,v in pairs(folders) do
+			if disks[v] == nil then
+				table.insert(tItemList,{n = v, id = "folder"})
+			end
+		end
+		for i,v in pairs(files) do
+			table.insert(tItemList,{n = v, id = "file"})
+		end
+	end
+	
+	local function paste()
+		if cut then
+			local s, m = pcall(
+				function()
+					fs.move(clipboard[1]..fSlash..clipboard[2], stringPath()..fSlash..clipboard[2])
+					cut = false
+					clipboard = nil
+				end)
+			if not s then
+				dialogBox("Error", (m or "Couldn't move"), {"ok"}, 4, 30)
+			end
+			if bugTest then
+				local x, y = term.getCursorPos()
+				term.setCursorPos(1, ({term.getSize()})[2])
+				write("from "..clipboard[1]..fSlash..clipboard[2].." to "..stringPath()..fSlash..clipboard[2])
+			end
+		else
+			local s, m = pcall(function()
+				if fs.exists(stringPath()..fSlash..clipboard[2]) then
+					fs.copy(clipboard[1]..fSlash..clipboard[2], stringPath()..fSlash.."copy-"..clipboard[2])
+				else
+					fs.copy(clipboard[1]..fSlash..clipboard[2], stringPath()..fSlash..clipboard[2])
+				end
+			end)
+			if not s then
+				dialogBox("Error", (m or "Couldn't copy"), {"ok"}, 4, 30)
+			end
+			if bugTest then
+				local x, y = term.getCursorPos()
+				term.setCursorPos(1, ({term.getSize()})[2])
+				write("from "..clipboard[1]..fSlash..clipboard[2].." to "..stringPath()..fSlash..clipboard[2])
+			end
+		end
+		newList()
+	end
+	
+	-- this section bellow handles the right click menu
+	
+	local tmenu = {
+		disk = {
+			["Open"] = function(tItem)
+				table.insert(path,tItem.n)
+				newList()
+			end,
+			["Copy"] = function(tItem)
+				clipboard = {stringPath(), tItem.n}
+				cut = false
+			end,
+			["Eject"] = function(tItem)
+				if dialogBox("Confirm","Eject "..fSlash..tItem.n.." "..tItem.s,{"yes","no"}) == 1 then
+					disk.eject(tItem.s)
+					newList()
+				end
+			end,
+			["ID label"] = function(tItem)
+				dialogBox("ID label",disk.getDiskID(tItem.s).." "..tostring(disk.getLabel(tItem.s)),{"ok"})
+			end,
+			["Set label"] = function(tItem)
+				local name = InputBox("Label?")
+				if name then
+					disk.setLabel(tItem.s,name)
+				end
+			end,
+			["Clear label"] = function(tItem)
+				if dialogBox("Confirm","Cleal Label from "..tItem.s,{"yes","no"}) == 1 then
+					disk.setLabel(tItem.s)
+				end
+			end
+		},
+		folder = {
+			["Open"] = function(temp)
+				table.insert(path,temp.n)
+				newList()
+			end,
+			["Copy"] = function(tItem)
+				clipboard = {stringPath(), tItem.n}
+				cut = false
+			end,
+			["Cut"] = function(tItem)
+				clipboard = {stringPath(), tItem.n}
+				cut = true
+			end,
+			["Delete"] = function(tItem)
+				if dialogBox("Confirm","Delete "..tItem.id.." "..tItem.n,{"yes","no"}) == 1 then
+					if fs.isReadOnly(stringPath()..fSlash..tItem.n) then
+						dialogBox("ERROR",tItem.id.." Is read Only",{"ok"})
+					else
+						fs.delete(stringPath()..fSlash..tItem.n)
+						newList()
+					end
+				end
+			end,
+			["Rename"] = function(tItem)
+				local sName = InputBox("New Name")
+				if type(sName) == "string" and sName ~= "" then
+					local s, m = pcall(function()
+						fs.move(stringPath()..fSlash..tItem.n,stringPath()..fSlash..sName)
+					end)
+					if not s then
+						dialogBox("Error", (m or "Rename failed"), {"ok"})
+					end
+				end
+				newList()
+			end
+		},
+		file = {
+			["Run"] = {
+				["Run"] = function(tItem)
+					osRunSpaces(stringPath()..fSlash..tItem.n)
+				end,
+				["Run CMD"] = function(tItem)
+					local cmd = InputBox("Commands")
+					if cmd then
+						osRunSpaces(stringPath()..fSlash..tItem.n,unpack(fixArgs(cmd)))
+					end
+				end,
+			},
+			["Open With"] = customLaunch,
+			["Rename"] = function(tItem)
+				local sName = InputBox("New Name")
+				if type(sName) == "string" and sName ~= "" then
+					local s, m = pcall(function()
+						fs.move(stringPath()..fSlash..tItem.n,stringPath()..fSlash..sName)
+					end)
+					if not s then
+						dialogBox("Error", (m or "Rename failed"), {"ok"})
+					end
+				end
+				newList()
+			end,
+			["Delete"] = function(tItem)
+				if dialogBox("Confirm","Delete "..tItem.id.." "..tItem.n,{"yes","no"}) == 1 then
+					if fs.isReadOnly(stringPath()..fSlash..tItem.n) then
+						dialogBox("ERROR",tItem.id.." Is read Only",{"ok"})
+					else
+						fs.delete(stringPath()..fSlash..tItem.n)
+						newList()
+					end
+				end
+			end,
+			["Cut"] = function(tItem)
+				clipboard = {stringPath(), tItem.n}
+				cut = true
+			end,
+			["Copy"] = function(tItem)
+				clipboard = {stringPath(), tItem.n}
+				cut = false
+			end
+		},
+		audio = {
+			["Play"] = 1,
+			["Eject"] = 1
+		},
+		back = {
+		},
+		blank = { -- tmenu.blank.Paste = 
+			["Paste"] = nil,
+			["New File"] = function()
+				local name = InputBox()
+				if name then
+					if fs.exists(stringPath()..fSlash..name) then
+						dialogBox("ERROR","Name exists",{"ok"})
+					else
+						local file = fs.open(stringPath()..fSlash..name,"w")
+						if file then
+							file.write("")
+							file.close()
+							newList()
+						else
+							dialogBox("ERROR","File not created",{"ok"})
+						end
+					end
+				end
+			end,
+			["New Folder"] = function()
+				local name = InputBox()
+				if name then
+					if fs.exists(stringPath()..fSlash..name) then
+						dialogBox("ERROR","Name exists",{"ok"})
+					else
+						if pcall(fs.makeDir,stringPath()..fSlash..name) then
+							newList()
+						else
+							dialogBox("ERROR","Access Denied",{"ok"})
+						end
+					end
+				end
+			end,
+			["Preferences"] = preferences
+		},
+	}
+	
+	-- end right click menu
+	
+	local function scrollBar(posX,posY)
+		if posX == boxOffX+boxW+1 and posY > boxOffY and posY <= boxOffY+boxH then
+			if #tItemList > boxH then
+				if posY == boxOffY + 1 then
+					listOff = 0
+				elseif posY == boxOffY+boxH then
+					listOff = #tItemList + 1 - boxH
+				else
+					listOff = math.ceil((posY - boxOffY - 1 )*(((#tItemList - boxH+2)/boxH)))
+				end
+				flag = true
+			end
+		end
+	end
+	
+	newList()
+	
+	while bRun do
+		if flag then
+			flag = false
+			-- clear
+			if oldHight ~= hight and oldWidth ~= width then
+--				term.setBackgroundColor(colors.black)
+--				term.clear()
+				paintutils.drawImage(paintutils.loadImage("MineOS/Texture/Desktop/"..dataname1a.."/1"), 1, 1)
+				term.setTextColor(1)
+				term.setBackgroundColor(8192)
+				term.setCursorPos(1,19)
+				write([[ Start ]])
+				term.setBackgroundColor(2048)
+				write([[                                              ]])
+				oldHight,oldWidth = hight,width
+			end
+			GetTime()
+			-- draw top title bar
+			local b = tbarW - #title -2
+			if b < 0 then
+				b = 0
+			end
+			printC(tbarX,tbarY,titleBar.txt,titleBar.back,string.sub(" "..title,1,tbarW)..string.rep(" ",b))
+			term.setTextColor(colors.white)
+			term.setBackgroundColor(colors.red)
+			term.write("X")
+			
+			-- draw location bar
+			local a = barW - #sPath - 1
+			if a < 0 then
+				a = 0
+			end
+			local tmppath = sPath
+			if shell and shell.getDisplayName then
+				tmppath = shell.getDisplayName(sPath)
+				--dialogBox("yay")
+			else
+				--dialogBox("moop")
+			end
+			tmppath = tmppath or sPath
+			local a = barW - #tmppath - 1
+			if a < 0 then
+				a = 0
+			end
+			printC(barX,barY,addressBar.txt,addressBar.back,string.sub(" "..tmppath,1,barW)..string.rep(" ",a))
+			
+			-- draw scroll bar
+			if #tItemList > boxH then
+				term.setBackgroundColor(scrollCol.back)
+				for i = 1,boxH do
+					term.setCursorPos(boxOffX+boxW+1,i + boxOffY)
+					local scroll = math.floor( boxH* (listOff/(#tItemList-boxH+2)) )+1
+					if i == scroll then
+						term.setBackgroundColor(scrollCol.button)
+						term.write(" ")
+						term.setBackgroundColor(scrollCol.back)
+					else
+						term.write(" ")
+					end
+				end
+			else
+				term.setBackgroundColor(scrollCol.off)
+				for i = 1,boxH do
+					term.setCursorPos(boxOffX+boxW+1,i + boxOffY)
+					term.write(" ")
+				end
+			end
+			
+			-- draw main section
+
+			for i = 1,boxH do -- listOff
+				local sel = i+listOff
+				if tItemList[sel] then
+					printC(1+boxOffX,i+boxOffY,(tIcons[tItemList[sel].id].tCol or itemWindo.txt),(tIcons[tItemList[sel].id].bCol or itemWindo.back),( tIcons[tItemList[sel].id].txt or "   "))
+					printC(4+boxOffX,i+boxOffY,itemWindo.txt,itemWindo.back,string.sub(" "..tItemList[sel].n..pading,1,boxW-3))
+				else
+					printC(1+boxOffX,i+boxOffY,itemWindo.txt,itemWindo.back,pading)
+				end
+			end
+			
+			if bugTest then
+				printC(1,1,"black","white",listOff.." "..boxOffY.." "..boxH)
+			end
+			
+		end
+		
+		-- react to events
+		local event = {os.pullEvent()}
+		
+		if event[1] == "mouse_click" then
+			if event[3] >= 1 and event[3] <= 6 and event[4] == 19 then  -- start menu support :)
+				startmenu()
+			end
+			if inBouwndry(event[3],event[4],boxOffX+1,boxOffY+1,boxW,boxH) then
+				local selected = tItemList[event[4]+listOff-boxOffY]
+				if selected and inBouwndry(event[3],event[4],boxOffX+1,event[4],#selected.n + 4,1) then
+					if event[2] == 1 then -- left mouse
+						if selected.id == "back" then
+							table.remove(path,#path)
+							newList()
+						elseif selected.id == "folder" or selected.id == "disk" then
+							table.insert(path,selected.n)
+							newList()
+						elseif selected.id == "file" then
+							if dialogBox("Run file?",selected.n,{"yes","no"}) == 1 then
+								resetScreen()
+								osRunSpaces(stringPath()..fSlash..selected.n)
+							end
+						flag = true
+						end
+					elseif event[2] == 2 then -- right mouse
+						rClickMenu("Options",tmenu[selected.id],selected,event[3],event[4])
+						flag = true
+					end
+				elseif event[2] == 2 then -- right clicking not on object
+					if clipboard then
+						tmenu.blank.Paste = paste
+					else
+						tmenu.blank.Paste = nil
+					end
+					rClickMenu("Options",tmenu["blank"],selected,event[3],event[4])
+					flag = true
+				end
+			elseif event[2] == 1 and event[3] == exitX and event[4] == exitY then
+--				if dialogBox("Confirm","Exit application",{"yes","no"}) == 1 then
+--					bRun = false
+--				end
+				bRun = false
+				flag = true
+			elseif event[2] == 1 then
+				scrollBar(event[3],event[4])
+			end
+		elseif event[1] == "mouse_scroll" then -- flag this needs new math
+			local old = listOff
+			listOff = listOff + event[2]
+			if listOff < 0 then
+				listOff = 0
+			end
+			if #tItemList + 1 - boxH > 0 and listOff > #tItemList + 1 - boxH then
+				listOff = #tItemList + 1 - boxH
+			elseif listOff > 0 and #tItemList + 1 - boxH < 0 then
+				listOff = 0
+			end
+			if listOff ~= old then
+				flag = true
+			end
+		
+		elseif event[1] == "mouse_drag" then -- scroll bar
+			scrollBar(event[3],event[4])
+		elseif event[1] == "disk" or event[1] == "disk_eject" then
+			newList()
+		elseif event[1] == "window_resize" then
+			termX,termY = term.getSize()
+			offsetX,offsetY = 1,1
+			hight,width = math.ceil(termY-2),math.ceil(termX-2)
+			
+			boxOffX,boxOffY = offsetX,offsetY + 2
+			boxH,boxW = hight - 2 ,width - 2
+			
+			barX,barY = offsetX + 1,offsetY + 2
+			barH,barW = 1,width - 1
+			
+			tbarX,tbarY = offsetX + 1,offsetY + 1
+			tbarH,tbarW = 1,width - 1
+			
+			exitX,exitY = offsetX + width - 1 ,offsetY + 1
+			pading = string.rep(" ",boxW)
+			
+			flag = true
+		elseif event[1] == "redraw" then
+			flag = true
+		end
+	end
+end
+
+local function main()
+	if term.isColor() then
+		clear()
+		fileSelect()
+		clear()
+	else
+		error("Not an Advanced Computer (gold) ")
+	end
+end
+
+local trash = (norun or main())
+
+shell.run("MineOS/Programs/Desktop")

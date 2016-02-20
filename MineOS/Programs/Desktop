@@ -1,0 +1,538 @@
+-- ########################## -- Funktionen -- ############################ -- 
+local function s(...) return sleep(...) end
+local function w(...) return write(...) end
+local function p(...) return print(...) end
+local function tw(...) return term.write(...) end
+local function scp(...) return term.setCursorPos(...) end
+local function sbc(...) return term.setBackgroundColor(...) end
+local function stc(...) return term.setTextColor(...) end
+local function tc(...) return term.clear(...) end
+local function tcl(...) return term.clearLine() end
+local function scb(...) return term.setCursorBlink(...) end
+local function ts(...) return term.scroll(...) end
+local function r(...) return shell.run(...) end
+local function para(...) return parallel.waitForAny(...) end
+local function sw(...) return textutils.slowWrite(...) end
+local function sp(...) return textutils.slowPrint(...) end
+-- ########################## -- Einstellungen -- ############################ -- 
+		   dataname = fs.open("MineOS/Online/data", "r")
+            if dataname then
+             dataname1a = dataname.readLine()
+		    end
+		   dataname.close()
+fs.makeDir("MineOS/Texture/Desktop/"..dataname1a)
+if not fs.exists("MineOS/Texture/Desktop/"..dataname1a.."/1") then
+r("pastebin get 9EvMFZbV MineOS/Texture/Desktop/"..dataname1a.."/1")
+end
+BreakPara = 0
+loopbreak2 = 0
+sbc(32768)
+stc(1)
+fs.makeDir("MineOS/Task")
+writetask = fs.open("MineOS/Task/task", "w")
+writetask.write([[]])
+writetask.close()
+-- ########################## -- BACKUP -- ############################ -- 
+ if fs.exists("startup") then
+  if fs.exists("MineOS/Backup/startup") then
+   fs.delete("startup")
+   fs.copy("MineOS/Backup/startup", "startup")
+  end
+ else
+ r("clear")
+ error("startup does not exist")
+ end
+-- ########################## -- Run Desktop -- ############################ -- 
+function runDesktop1()
+function resetScreen()
+image = paintutils.loadImage("MineOS/Texture/Desktop/"..dataname1a.."/1")
+paintutils.drawImage(image, 1, 1)
+stc(1)
+sbc(8192)
+scp(1,19)
+w([[ Start ]])
+sbc(2048)
+w([[                                              ]])
+-- TIMEOLD
+	GetTime()
+   scp(8,19)
+   sbc(8)
+r("MineOS/Task/task")
+   sbc(2048)
+end
+
+function resetDesktop()
+-- ########################## -- Desktop Background -- ############################ -- 
+image = paintutils.loadImage("MineOS/Texture/Desktop/"..dataname1a.."/1")
+paintutils.drawImage(image, 1, 1)
+-- ########################## -- Clock -- ############################ --
+
+function GetTime()
+
+if TimeAPI == "USA" then
+USATime = "00:00"
+	USATime = http.get("http://www.timeapi.org/edt/now?format=%25k:%25M")
+	USATime = USATime.readAll()
+	  scp(47,19)
+	  stc(1)
+	  sbc(2048)
+	  write(USATime)
+elseif TimeAPI == "DE" then
+DETime = "00:00"
+	DETime = http.get("http://www.timeapi.org/cet/now?format=%25k:%25M")
+	DETime = DETime.readAll()
+	  scp(47,19)
+	  stc(1)
+	  sbc(2048)
+	  write(DETime)
+elseif TimeAPI == "EN" then
+ENTime = "00:00"
+	ENTime = http.get("http://www.timeapi.org/utc/now?format=%25k:%25M")
+	ENTime = ENTime.readAll()
+	  scp(47,19)
+	  stc(1)
+	  sbc(2048)
+	  write(ENTime)
+elseif TimeAPI == "MC" then
+      timeprint2 = os.time()
+	  timeprint2 = textutils.formatTime(timeprint2, true)
+	  sbc(1)
+	  stc(32768)
+	  scp(47,19)
+	  stc(1)
+	  sbc(2048)
+	  write(timeprint2.." ")
+	  sbc(1)
+	  stc(32768)
+end
+end
+
+
+function timeprint()
+sbc(1)
+stc(32768)
+BreakPara = 1
+DETime = "00:00" -- if you have a http error
+USATime = "00:00"
+ENTime = "00:00"
+   TimeAPIR = fs.open("MineOS/Config/TimeAPI", "r")
+   TimeAPI = TimeAPIR.readLine()
+   TimeAPIR.close()
+GetTime()
+stc(1)
+sbc(8192)
+scp(1,19)
+w([[ Start ]])
+sbc(2048)
+w([[                                            ]])
+   scp(8,19)
+   sbc(8)
+r("MineOS/Task/task")
+   sbc(2048)
+sbc(1)
+stc(32768)
+while true do
+sbc(1)
+stc(32768)
+GetTime()
+sbc(1)
+stc(32768)
+sleep(51) -- Time Update #### -- change to 1 for see the seconds in OS Time clock
+sbc(1)
+stc(32768)
+end
+end
+
+function timeprint1()
+      scp(47,19)
+	  stc(1)
+	  sbc(2048)
+	     if TimeAPI == "USA" then
+		   write(USATime)
+	     elseif TimeAPI == "DE" then
+		   write(DETime)
+	     elseif TimeAPI == "EN" then
+		   write(ENTime)
+	     elseif TimeAPI == "MC" then
+           write(timeprint2.." ")
+	     end
+
+end
+function runsystem()
+timeprint1()
+-- ########################## -- Run System -- ############################ -- 
+while true do
+	GetTime()
+	 event, button, X, Y = os.pullEvent("mouse_click")
+-- ########################## -- StartMenu -- ############################ --
+    if X >= 8 and X <= 20 and Y == 19 and closetask1 == 0 then
+     openrun()
+	 openrun2()
+	end
+-- ############ -- Startlist-Design -- ############ --
+	   if X >= 1 and X <= 6 and Y == 19 then
+	   
+  function startmenu()
+	   breaktask1 = 1
+	   
+	   
+	   
+	    scp(1,10)
+		sbc(2048)
+	    w([[            ]])
+		scp(2,10)
+		stc(1)
+		write(dataname1a)
+		scp(14,10)
+        sbc(16384)
+	    w([[X]])
+		scp(13,10)
+		sbc(2048)
+		w([[ ]])
+		sbc(1)
+		stc(32768)
+		scp(1,11)
+		 w([[:Documents    ]])
+		scp(1,12)
+		 w([[:Browser      ]])
+		scp(1,13)
+		 w([[:Explorer     ]])
+		scp(1,14)
+		 w([[              ]])
+		scp(1,15)
+		 w([[:Programs    >]])
+		scp(1,16)
+		 w([[:Run          ]])
+		scp(1,17)
+		 w([[              ]])
+		scp(1,18)
+		 w([[:Shutdown    >]])
+		 -- TIMEOLD
+while true do
+GetTime()
+   event, button, X, Y = os.pullEvent("mouse_click")
+-- ############ -- Startfiles List -- ############ --
+    if X >= 8 and X <= 20 and Y == 19 and closetask1 == 0 then
+     openrun()
+	 openrun2()
+	 error("Terminated")
+	end
+-- ############ -- EMPTY -- ############ --
+ if X >= 1 and X <= 14 and Y == 14 then
+ stc(1)
+   end
+-- ############ -- Documents -- ############ --
+ if X >= 1 and X <= 14 and Y == 11 then
+ stc(1)
+ r("MineOS/Programs/Documents")
+ error("Terminated")
+ break
+   end
+-- ############ -- Browser -- ############ --
+ if X >= 1 and X <= 14 and Y == 12 then
+ stc(1)
+ r("MineOS/Programs/Browser")
+ break
+   end
+-- ############ -- Explorer -- ############ --
+ if X >= 1 and X <= 14 and Y == 13 then
+ stc(1)
+ r("MineOS/Programs/System")
+ error("Terminated")
+ break
+   end
+-- ############ -- Programs -- ############ --
+ if X >= 1 and X <= 14 and Y == 15 then
+   sbc(1)
+   stc(32768)
+   scp(15,14)
+   sbc(16384)
+      w([[:]])
+   sbc(1)
+      w([[Back         ]])
+   scp(15,15)
+   sbc(8)
+      w([[:]])
+   sbc(1)
+      w([[Task Manager ]])
+   scp(15,16)
+   sbc(8)
+      w([[:]])
+   sbc(1)
+      w([[CraftOS      ]])
+   scp(15,17)
+   sbc(8)
+      w([[:]])
+   sbc(1)
+      w([[Settings     ]])
+   scp(15,18)
+   sbc(8)
+      w([[:]])
+   sbc(1)
+      w([[Editor       ]])
+   scp(14,15)
+   stc(16384)
+   w([[>]])
+ while true do
+GetTime()
+  event, button, X, Y = os.pullEvent("mouse_click")
+  stc(1)
+if X >= 15 and X <= 24 and Y == 14 then
+     resetDesktop()
+	 error("Terminated")
+	 break
+   end
+if X >= 15 and X <= 24 and Y == 15 then
+	 r("MineOS/Programs/Manager")
+	 error("Terminated")
+	 break
+   end
+if X >= 15 and X <= 24 and Y == 16 then
+	 r("MineOS</Programs/Terminal")
+	  error("Terminated")
+	 break
+   end
+if X >= 15 and X <= 24 and Y == 17 then
+	 r("MineOS/Programs/Settings")
+	  error("Terminated")
+	 break
+   end
+if X >= 15 and X <= 24 and Y == 18 then
+-- This is bugged :(
+
+--[[
+	sbc(2048)
+	stc(1)
+	scp(15,5)
+	w("Open File         ")
+	sbc(16384)
+	w("X")
+	sbc(1)
+	stc(32768)
+	scp(15,6)
+	w(": Filename:       :")
+	scp(15,7)
+	sbc(1)
+	w(": ")
+	sbc(258)
+	w("               ")
+	sbc(1)
+	w(" :")
+	sbc(1)
+	scp(15,8)
+	w(":                 :")
+	scp(15,9)
+	w("+-----------------+")
+	scp(17,7)
+	sbc(258)
+	stc(128)
+	w("")
+	scp(17,7)
+	stc(32768)
+	fileaddL = read()
+	  if fileaddL == "" then
+r("MineOS/Programs/Desktop")
+error("Terminated")
+	  elseif fs.exists(fileaddL) then
+	  sbc(1)
+	  scp(1,17)
+	    r("MineOS/Programs/Editor "..fileaddL)
+r("MineOS/Programs/Desktop")
+error("Terminated")
+	  elseif not fs.exists(fileaddL) then
+	    scp(17,7)
+		stc(16384)
+		w("Create file!")
+        sleep(2)
+		sbc(256)
+r("MineOS/Programs/Editor "..fileaddL)
+error("Terminated")
+break
+end
+   
+]]--
+	 r("MineOS/Programs/Editor")
+	  error("Terminated")
+	 break
+   end
+ if X >= 1 and X <= 51 and Y == 19 then
+   resetDesktop()
+   -- TIMEOLD
+   break
+ end
+ if X >= 14 and X <= 14 and Y == 10 then
+   resetDesktop()
+   -- TIMEOLD
+   break
+   end
+ end
+break
+end -- end loop
+-- ############ -- Run -- ############ --
+ if X >= 1 and X <= 14 and Y == 16 then
+ r("MineOS/Programs/Run")
+ stc(1)
+ error("Terminated")
+ break
+   end
+-- ############ -- Close -- ############ --
+ if X >= 14 and X <= 14 and Y == 10 then
+ stc(1)
+   resetDesktop()
+   error("Terminated")
+   break
+   end
+-- ############ -- Close -- ############ --
+ if X >= 1 and X <= 6 and Y == 19 then
+ stc(1)
+   resetDesktop()
+   error("Terminated")
+   break
+   end
+-- ############ -- Shutdown -- ############ --
+ if X >= 1 and X <= 14 and Y == 18 then
+   sbc(1)
+   stc(32768)
+   scp(15,14)
+   sbc(16384)
+      w([[:]])
+   sbc(1)
+      w([[Back     ]])
+   scp(15,15)
+   sbc(8)
+      w([[:]])
+   sbc(1)
+      w([[Logout   ]])
+   scp(15,16)
+   sbc(8)
+      w([[:]])
+   sbc(1)
+      w([[Shutdown ]])
+   scp(15,17)
+   sbc(8)
+      w([[:]])
+   sbc(1)
+      w([[Reboot   ]])
+   scp(15,18)
+   sbc(8)
+      w([[:]])
+   sbc(1)
+      w([[Relog    ]])
+   scp(14,18)
+   stc(16384)
+   w([[>]])
+ while true do
+GetTime()
+  event, button, X, Y = os.pullEvent("mouse_click")
+  stc(1)
+if X >= 15 and X <= 24 and Y == 14 then
+     resetDesktop()
+	 break
+   end
+if X >= 15 and X <= 24 and Y == 15 then
+
+saveS2 = fs.open("MineOS/Config/SaveStart", "r")
+saveST = saveS2.readLine()
+saveS2.close()
+if saveST == "false" then
+saveS = fs.open("MineOS/Config/SaveStart", "w")
+saveS.write("true")
+saveS.close()
+elseif saveST == "trueKeep" then
+end
+    sbc(128)
+	r("clear")
+	s(0.1)
+	
+	sbc(256)
+	r("clear")
+	s(0.1)
+	sbc(1)
+	r("clear")
+	s(0.1)
+    sbc(32768)
+	r("clear")
+	s(0.1)
+    sbc(128)
+	r("clear")
+	s(0.1)
+	sbc(256)
+	r("clear")
+	s(0.1)
+	sbc(1)
+	r("clear")
+	 r("startup")
+	 error("Terminated")
+	 break
+   end
+if X >= 15 and X <= 24 and Y == 16 then
+	 r("MineOS/Programs/Shutdown")
+	 error("Terminated")
+	 break
+   end
+if X >= 15 and X <= 24 and Y == 17 then
+	 r("MineOS</Programs/Reboot")
+	 error("Terminated")
+	 break
+   end
+if X >= 15 and X <= 24 and Y == 18 then
+	 r("MineOS/Programs/Relog")
+	 error("Terminated")
+	 break
+   end
+ if X >= 1 and X <= 51 and Y == 19 then
+   resetDesktop()
+   -- TIMEOLD
+   error("Terminated")
+   break
+ end
+ if X >= 14 and X <= 14 and Y == 10 then
+   resetDesktop()
+   -- TIMEOLD
+   error("Terminated")
+   break
+   end -- if
+ end -- loop extramenu
+end -- runsystem
+end -- startmenu
+end -- reset desktop
+      if BreakPara == 0 then
+        para(startmenu, timeprint)
+	  else
+		startmenu()
+	  end
+end
+end
+error("Terminated")
+resetDesktop()
+end
+-- ########################## -- Draw Task Menu -- ############################ --
+stc(1)
+sbc(8192)
+scp(1,19)
+w([[ Start ]])
+sbc(2048)
+w([[                                       00:00]])
+	GetTime()
+   scp(8,19)
+   sbc(8)
+r("MineOS/Task/task")
+   sbc(2048)
+-- ###############################################################################
+runsystem()
+end
+resetDesktop()
+end
+
+
+function terminate()	
+ while true do
+  local events = os.pullEventRaw()
+   if events == "terminate" then
+os.reboot()
+  end
+ end
+end
+
+
+para(terminate, runDesktop1)
