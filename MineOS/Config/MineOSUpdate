@@ -1,5 +1,5 @@
 --#########################################################
-ONver = 3.0
+ONver = 1.2
 ---------------------------------------------------------
 function UPDATING()
 --#########################################################
@@ -19,7 +19,7 @@ OSver = version.readLine()
 version.close()
 ---------------------------------------------------------
 --#########################################################
-if OSver == "1.0" then
+if OSver == tostring(ONver) then
 --#########################################################
 write("MineOS is up to date!")
 term.setCursorPos(31,2)
@@ -39,7 +39,7 @@ print("")
 print("Old version: ".. OSver)
 print("New version: ".. ONver)
 print("")
-print("Update by MineStudio")
+print("Update by Pugduddly")
 sleep(3)
 term.setCursorPos(1,4)
 write("Reboot!")
