@@ -385,19 +385,16 @@ UserEdit = fs.open("MineOS/Profile/User1", "r")
          if UserEdit then
           EditName1  = UserEdit.readLine()
 		  EditPass1  = UserEdit.readLine()
-		  EditLen1   = UserEdit.readLine()
          end
 UserEdit = fs.open("MineOS/Profile/User2", "r")
          if UserEdit then
           EditName2  = UserEdit.readLine()
 		  EditPass2  = UserEdit.readLine()
-		  EditLen2   = UserEdit.readLine()
          end
 UserEdit = fs.open("MineOS/Profile/User3", "r")
          if UserEdit then
           EditName3  = UserEdit.readLine()
 		  EditPass3  = UserEdit.readLine()
-		  EditLen3   = UserEdit.readLine()
          end
 --############################### Design ####################################-- 
 sbc(256)
@@ -445,7 +442,7 @@ scp(22,6)
 sbc(256)
 write("                             ")
 scp(22,6)
-if EditPass1 == "no password" then
+if EditPass1 == "no password" or EditPass1 == SHA.sha256("no password") then
 write("")
 else
 write("********")
@@ -495,7 +492,7 @@ scp(22,11)
 sbc(256)
 write("                             ")
 scp(22,11)
-if EditPass2 == "no password" then
+if EditPass2 == "no password" or EditPass2 == SHA.sha256("no password") then
 write("")
 else
 write("********")
@@ -546,7 +543,7 @@ scp(22,16)
 sbc(256)
 write("                             ")
 scp(22,16)
-if EditPass3 == "no password" then
+if EditPass3 == "no password" or EditPass3 == SHA.sha256("no password") then
 write("")
 else
 write("********")
@@ -638,10 +635,10 @@ if X >= 22 and X <= 50 and Y == 4 then
 							if fs.exists("MineOS/Profile/User1") then
 								ChangedNameO1 = fs.open("MineOS/Profile/User1", "w")
 								ChangedNameO1.write(ChangedName1.."\n")
-								if ChangedPass1 ~= "no password" then
-									ChangedNameO1.write(SHA.sha256(ChangedPass1))
-								else
+								if ChangedPass1 == "no password" then
 									ChangedNameO1.write("no password")
+								else
+									ChangedNameO1.write(SHA.sha256(ChangedPass1))
 								end
 								ChangedNameO1.write(#ChangedPass1)
 								ChangedNameO1.close()
@@ -666,10 +663,10 @@ if X >= 22 and X <= 50 and Y == 4 then
 							if fs.exists("MineOS/Profile/User1") then
 								ChangedNameO1 = fs.open("MineOS/Profile/User1", "w")
 								ChangedNameO1.write(ChangedName1.."\n")
-								if ChangedPass1 ~= "no password" then
-									ChangedNameO1.write(SHA.sha256(ChangedPass1))
-								else
+								if ChangedPass1 == "no password" then
 									ChangedNameO1.write("no password")
+								else
+									ChangedNameO1.write(SHA.sha256(ChangedPass1))
 								end
 								ChangedNameO1.write(#ChangedPass1)
 								ChangedNameO1.close()
@@ -694,10 +691,10 @@ if X >= 22 and X <= 50 and Y == 9 then
 							if fs.exists("MineOS/Profile/User2") then
 								ChangedNameO2 = fs.open("MineOS/Profile/User2", "w")
 								ChangedNameO2.write(ChangedName2.."\n")
-								if ChangedPass2 ~= "no password" then
-									ChangedNameO2.write(SHA.sha256(ChangedPass2))
-								else
+								if ChangedPass2 == "no password" then
 									ChangedNameO2.write("no password")
+								else
+									ChangedNameO2.write(SHA.sha256(ChangedPass2))
 								end
 								ChangedNameO2.write(#ChangedPass2)
 								ChangedNameO2.close()
@@ -722,10 +719,10 @@ if X >= 22 and X <= 50 and Y == 9 then
 							if fs.exists("MineOS/Profile/User2") then
 								ChangedNameO2 = fs.open("MineOS/Profile/User2", "w")
 								ChangedNameO2.write(ChangedName2.."\n")
-								if ChangedPass2 ~= "no password" then
-									ChangedNameO2.write(SHA.sha256(ChangedPass2))
-								else
+								if ChangedPass2 == "no password" then
 									ChangedNameO2.write("no password")
+								else
+									ChangedNameO2.write(SHA.sha256(ChangedPass2))
 								end
 								ChangedNameO2.write(#ChangedPass2)
 								ChangedNameO2.close()
@@ -750,10 +747,10 @@ if X >= 22 and X <= 50 and Y == 14 then
 							if fs.exists("MineOS/Profile/User3") then
 								ChangedNameO3 = fs.open("MineOS/Profile/User3", "w")
 								ChangedNameO3.write(ChangedName3.."\n")
-								if ChangedPass3 ~= "no password" then
-									ChangedNameO3.write(SHA.sha256(ChangedPass3))
-								else
+								if ChangedPass3 == "no password" then
 									ChangedNameO3.write("no password")
+								else
+									ChangedNameO3.write(SHA.sha256(ChangedPass3))
 								end
 								ChangedNameO3.write(#ChangedPass3)
 								ChangedNameO3.close()
@@ -778,10 +775,10 @@ if X >= 22 and X <= 50 and Y == 14 then
 							if fs.exists("MineOS/Profile/User3") then
 								ChangedNameO3 = fs.open("MineOS/Profile/User3", "w")
 								ChangedNameO3.write(ChangedName3.."\n")
-								if ChangedPass3 ~= "no password" then
-									ChangedNameO3.write(SHA.sha256(ChangedPass3))
-								else
+								if ChangedPass3 == "no password" then
 									ChangedNameO3.write("no password")
+								else
+									ChangedNameO3.write(SHA.sha256(ChangedPass3))
 								end
 								ChangedNameO3.write(#ChangedPass3)
 								ChangedNameO3.close()

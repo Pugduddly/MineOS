@@ -213,7 +213,7 @@ logincheck = fs.open("MineOS/Profile/User1", "r")
 		   stc(1)
 		   w(username1)
 		   stc(32)
-		   if userpass1 == "no password" then
+		   if userpass1 == "no password" or userpass1 == SHA.sha256("no password") then
            scp(22,6)
 		   w([[No password]])
 		   else
@@ -236,7 +236,7 @@ logincheck = fs.open("MineOS/Profile/User2", "r")
 		   stc(1)
 		   w(username2)
 		   stc(32)
-		   if userpass2 == "no password" then
+		   if userpass2 == "no password" or userpass2 == SHA.sha256("no password") then
            scp(22,10)
 		   w([[No password]])
 		   else
@@ -259,7 +259,7 @@ logincheck = fs.open("MineOS/Profile/User3", "r")
 		   stc(1)
 		   w(username3)
 		   stc(32)
-		   if userpass3 == "no password" then
+		   if userpass3 == "no password" or userpass1 == SHA.sha256("no password") then
            scp(22,14)
 		   w([[No password]])
 		   else
@@ -478,7 +478,7 @@ while true do
               setOnline.write(username1)
               setOnline.close()
 		    runDesktop1()
-			else
+		   else
 		    sbc(1)
 		    stc(32768)
 		    scp(22,6)
@@ -649,11 +649,15 @@ scp(13,3)
 p([[    +----------------------------------]])
 scp(1,2)
 w([[> ]])
+--[[
 while true do
 inputerror1 = read()
 r(inputerror1)
 w([[> ]])
 end
+]]--
+scp(1,1)
+r("shell")
 end
 -- ################# -- 
 -- ## HTTP Test ## -- 
@@ -670,12 +674,16 @@ p([[    :      HTTP is not enabled!     ]])
 scp(13,3)
 p([[    +----------------------------------]])
 scp(1,2)
+--[[
 w([[> ]])
 while true do
 inputerror1 = read()
 r(inputerror1)
 w([[> ]])
 end
+]]--
+scp(1,1)
+r("shell")
 end
 -- ############### -- 
 -- ## Start Animation ## ---------------------------------------> START <--------------------------
