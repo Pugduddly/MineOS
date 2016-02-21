@@ -485,7 +485,8 @@ while true do
 		    sw([[                  ]])
 		    scp(22,6)
 		    passwordcheck1 = read("*")
-		     if SHA.sha256(passwordcheck1) == userpass1 then
+--		     if SHA.sha256(passwordcheck1) == userpass1 then
+		     if passwordcheck1 == userpass1 then
 			  loopbreak2a()
 			if not fs.exists("MineOS/Online") then
              fs.makeDir("MineOS/Online")
@@ -535,7 +536,8 @@ if X >= 17 and X <= 40 and Y == 9 or X >= 17 and X <= 40 and Y == 10 then
 		    sw([[                  ]])
 		    scp(22,10)
 		    passwordcheck1 = read("*")
-		     if SHA.sha256(passwordcheck1) == userpass2 then
+--		     if SHA.sha256(passwordcheck1) == userpass2 then
+		     if passwordcheck1 == userpass2 then
 			  loopbreak2a()
 			if not fs.exists("MineOS/Online") then
              fs.makeDir("MineOS/Online")
@@ -585,7 +587,8 @@ if X >= 17 and X <= 40 and Y == 13 or X >= 17 and X <= 40 and Y == 14 then
 		    sw([[                  ]])
 		    scp(22,14)
 		    passwordcheck1 = read("*")
-		     if SHA.sha256(passwordcheck1) == userpass3 then
+--		     if SHA.sha256(passwordcheck1) == userpass3 then
+		     if passwordcheck1 == userpass3 then
 			  loopbreak2a()
 			if not fs.exists("MineOS/Online") then
              fs.makeDir("MineOS/Online")
@@ -647,15 +650,6 @@ scp(13,2)
 p([[    :      You need an Advanced PC! ]])
 scp(13,3)
 p([[    +----------------------------------]])
-scp(1,2)
-w([[> ]])
---[[
-while true do
-inputerror1 = read()
-r(inputerror1)
-w([[> ]])
-end
-]]--
 scp(1,1)
 r("shell")
 end
@@ -673,15 +667,6 @@ scp(13,2)
 p([[    :      HTTP is not enabled!     ]])
 scp(13,3)
 p([[    +----------------------------------]])
-scp(1,2)
---[[
-w([[> ]])
-while true do
-inputerror1 = read()
-r(inputerror1)
-w([[> ]])
-end
-]]--
 scp(1,1)
 r("shell")
 end
