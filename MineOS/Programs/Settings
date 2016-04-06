@@ -24,10 +24,8 @@ writetask = fs.open("MineOS/Task/task", "w")
 writetask.write([[]])
 writetask.close()
 -- ########################## -- ABOUT -- ############################ -- 
-wEdition = "Windows XP"
-wExtraStatus = "Beta"
-wOSName = "MineOS"
-wDeveloper = "Evan Carlson"
+wEdition = "MineOS"
+wDeveloper = "Pugduddly"
 
 wVersionS = fs.open("MineOS/Config/OSversion", "r")
 wVersion = wVersionS.readLine()
@@ -205,11 +203,11 @@ saveSK = fs.open("MineOS/Config/SaveStart", "r")
 SaveStart = saveSK.readLine()
 saveSK.close()
 
-if SaveStart == "false" then -- false for no fast start
+if SaveStart == "false" then
 scp(16,8)
 sbc(16384)
 write("ON ")
-elseif SaveStart == "trueKeep" then -- true for fast start
+elseif SaveStart == "trueKeep" then
 scp(20,8)
 sbc(16384)
 write("OFF")
@@ -247,13 +245,11 @@ scp(1,3)
 stc(32768)
 write("System Info ")
 sbc(1)
-scp(15,3)
-write("Windows Edition:")
 scp(15,4)
 stc(256)
-write(" "..wEdition.." "..wVersion.." "..wExtraStatus)
+write(wEdition.." "..wVersion)
 scp(15,5)
-write(" "..wOSName.." by "..wDeveloper)
+write("By "..wDeveloper)
 scp(15,7)
 stc(32768)
 write("System Information:")

@@ -15,7 +15,7 @@ local ver = "1.4"
 local sTitle = "File Browser"
 local bugTest, norun, dir, showAll
 local _tArgs = {}
-local config = "MineOS/Config/explorer.cfg"
+local config = "/MineOS/Config/explorer.cfg"
 
 local temp
 if shell and shell.getRunningProgram then

@@ -5,4 +5,3 @@ print("MineOS")
 print("Version "..OSver.." Beta")
 print(os.version())
 print("© 2016 Evan Carlson (Pugduddly)")
-
