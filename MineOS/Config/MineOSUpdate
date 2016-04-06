@@ -1,4 +1,7 @@
---#########################################################
+version = fs.open("MineOS/Config/OSversion", "r")
+ONver = version.readAll()
+ONlen = #ONver
+version.close()
 response = http.get("https://raw.githubusercontent.com/Pugduddly/MineOS/master/MineOS/Config/OSversion")
 if response then
 	OSver = response.readAll()
@@ -11,7 +14,7 @@ else
 	write("No connection D:")
 end
 term.setCursorPos(31,2)
-write("Version         ")
-version = fs.open("MineOS/Config/OSversion", "r")
-write(version.readLine())
-version.close()
+--write("Version             ")
+write("Version")
+for i=0, 13-ONlen do write(" ") end
+write(ONver)
