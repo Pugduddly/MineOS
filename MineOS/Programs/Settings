@@ -65,40 +65,19 @@ function getSize(path)
 end
 --############################### Design ##################################--
 function setLayout()
-    scp(1,2)
-    w("            :")
     scp(1,3)
-    w("System Info :")
+    w("System Info ")
     scp(1,4)
-    w("Profiles    :")
+    w("Profiles    ")
     scp(1,5)
-    w("Background  :")
+    w("Background  ")
     scp(1,6)
-    w("Settings    :")
-    scp(1,7)
-    w("            :")
-    scp(1,8)
-    w("            :")
-    scp(1,9)
-    w("            :")
-    scp(1,10)
-    w("            :")
-    scp(1,11)
-    w("            :")
-    scp(1,12)
-    w("            :")
-    scp(1,13)
-    w("            :")
-    scp(1,14)
-    w("            :")
-    scp(1,15)
-    w("            :")
-    scp(1,16)
-    w("            :")
-    scp(1,17)
-    w("            :")
-    scp(1,18)
-    w("            :")
+    w("Settings    ")
+    
+    for i = 2, 18 do
+        scp(13, i)
+        w(":")
+    end
 end
 
 --############################### System Settings ##################################--
@@ -559,14 +538,12 @@ function SystemMouse()
                     if fs.exists("MineOS/Profile/User1") then
                         ChangedNameO1 = fs.open("MineOS/Profile/User1", "w")
                         ChangedNameO1.write(ChangedName1.."\n")
-                        --[[
-								if ChangedPass1 == "no password" then
-									ChangedNameO1.write(ChangedPass1)
-								else
-									ChangedNameO1.write(SHA.sha256(ChangedPass1))
-								end
-]]--
-                        ChangedNameO1.write(ChangedPass1)
+                        if ChangedPass1 == "no password" then
+                            ChangedNameO1.write(ChangedPass1)
+                        else
+                            ChangedNameO1.write(SHA.sha256(ChangedPass1))
+                        end
+                        --ChangedNameO1.write(ChangedPass1)
                         ChangedNameO1.close()
                     end
 
@@ -589,14 +566,12 @@ function SystemMouse()
                     if fs.exists("MineOS/Profile/User2") then
                         ChangedNameO2 = fs.open("MineOS/Profile/User2", "w")
                         ChangedNameO2.write(ChangedName2.."\n")
-                        --[[
-								if ChangedPass2 == "no password" then
-									ChangedNameO2.write(ChangedPass2)
-								else
-									ChangedNameO2.write(SHA.sha256(ChangedPass2))
-								end
-]]--
-                        ChangedNameO2.write(ChangedPass2)
+                        if ChangedPass2 == "no password" then
+                            ChangedNameO2.write(ChangedPass2)
+                        else
+                            ChangedNameO2.write(SHA.sha256(ChangedPass2))
+                        end
+                        --ChangedNameO2.write(ChangedPass2)
                         ChangedNameO2.close()
                     end
 
@@ -619,14 +594,12 @@ function SystemMouse()
                     if fs.exists("MineOS/Profile/User2") then
                         ChangedNameO2 = fs.open("MineOS/Profile/User2", "w")
                         ChangedNameO2.write(ChangedName2.."\n")
-                        --[[
-								if ChangedPass2 == "no password" then
-									ChangedNameO2.write(ChangedPass2)
-								else
-									ChangedNameO2.write(SHA.sha256(ChangedPass2))
-								end
-]]--
-                        ChangedNameO2.write(ChangedPass2)
+                        if ChangedPass2 == "no password" then
+                            ChangedNameO2.write(ChangedPass2)
+                        else
+                            ChangedNameO2.write(SHA.sha256(ChangedPass2))
+                        end
+                        --ChangedNameO2.write(ChangedPass2)
                         ChangedNameO2.close()
                     end
 

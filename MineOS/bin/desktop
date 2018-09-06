@@ -29,13 +29,13 @@ local w,h = parentTerm.getSize()
 
 local tProcesses = {}
 local tStartMenu = {
-    {"CraftOS", {"/rom/programs/shell"}},
-    {"Explorer", {"/rom/programs/shell", "/MineOS/Programs/Explorer"}},
-    {"Firewolf", {"/rom/programs/shell", "/MineOS/Programs/Firewolf"}},
-    {"Settings", {"/MineOS/Programs/Settings"}},
-    {"", {}},
-    {"Shutdown", {"/MineOS/bin/shutdown"}, true},
-    {"Reboot", {"/MineOS/bin/reboot"}, true}
+    {name = "CraftOS", command = {"/rom/programs/shell"}},
+    {name = "Explorer", command = {"/rom/programs/shell", "/MineOS/Programs/Explorer"}},
+    {name = "Firewolf", command = {"/rom/programs/shell", "/MineOS/Programs/Firewolf"}},
+    {name = "Settings", command = {"/MineOS/Programs/Settings"}},
+    {name = ""},
+    {name = "Shutdown", command = {"/MineOS/bin/shutdown"}, doRunNative = true},
+    {name = "Reboot", command = {"/MineOS/bin/reboot"}, doRunNative = true}
 }
 local nCurrentProcess = nil
 local nRunningProcess = nil
@@ -203,7 +203,7 @@ local function redrawMenu()
             
             local title = tProcesses[n].sTitle
             local titleLen = #title
-            if titleLen >= 8 and titleLen <= 10 then
+            if titleLen > 9 and titleLen <= 10 then
                 parentTerm.write(title)
                 for i = 1, 10 - titleLen do
                     parentTerm.write(" ")
@@ -331,14 +331,15 @@ local function drawStartMenu()
     parentTerm.setTextColor(startMenuTextColor)
     for i = 1, #tStartMenu do
         parentTerm.setCursorPos(1, ofs + i)
-        parentTerm.write(tStartMenu[i][1])
-        for i = 1, 14 - #tStartMenu[i][1] do
+        parentTerm.write(tStartMenu[i].name)
+        for i = 1, 14 - #tStartMenu[i].name do
             parentTerm.write(" ")
         end
     end
 end
 
 local function doStartMenuClick(button, x, y)
+    parentTerm.setCursorBlink(false)
     local ofs = h - #tStartMenu - 1
     if x >= 1 and x <= 7 and y == h and not bStartMenuOpen then
         bStartMenuOpen = true
@@ -347,24 +348,24 @@ local function doStartMenuClick(button, x, y)
         bStartMenuOpen = false
         for i = 1, #tStartMenu do
             if y == ofs + i and x <= 14 then
-                if tStartMenu[i][2] == nil or #tStartMenu[i][2] == 0 then
+                if tStartMenu[i].command == nil or #tStartMenu[i].command == 0 then
                     bStartMenuOpen = true
                 else
                     parentTerm.setBackgroundColor(startMenuTextColor)
                     parentTerm.setTextColor(startMenuBgColor)
                     parentTerm.setCursorPos(1, ofs + i)
-                    parentTerm.write(tStartMenu[i][1])
-                    for i = 1, 14 - #tStartMenu[i][1] do
+                    parentTerm.write(tStartMenu[i].name)
+                    for i = 1, 14 - #tStartMenu[i].name do
                         parentTerm.write(" ")
                     end
                     os.sleep(0.25)
-                    if tStartMenu[i][3] == true then
+                    if tStartMenu[i].doRunNative == true then
                         local oldTerm = term.current()
                         term.redirect(parentTerm)
-                        os.run(envVars, table.unpack(tStartMenu[i][2]))
+                        os.run(envVars, table.unpack(tStartMenu[i].command))
                         term.redirect(oldTerm)
                     else
-                        local nTask = envVars["multishell"].launch(envVars, table.unpack(tStartMenu[i][2]))
+                        local nTask = envVars["multishell"].launch(envVars, table.unpack(tStartMenu[i].command))
                         if nTask then
                             envVars["multishell"].setFocus(nTask)
                         end
@@ -513,7 +514,11 @@ while bIsRunning do
                     for n=1,#tProcesses do
                         tabEnd = tabStart + 10
                         if x >= tabStart and x < tabEnd then
-                            selectProcess(n)
+                            if nCurrentProcess == n then
+                                deselectProcess(n)
+                            else
+                                selectProcess(n)
+                            end
                             redrawMenu()
                             break
                         end
@@ -528,7 +533,6 @@ while bIsRunning do
                         end
                         timer = os.startTimer(nInterval)
                     elseif (x == w - 3 or x == w - 2) and nCurrentProcess ~= nil then
-                        --nCurrentProcess = nil
                         deselectProcess(nCurrentProcess)
                         redrawMenu()
                     end
