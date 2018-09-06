@@ -1,9 +1,9 @@
--- ########################## -- Funktionen -- ############################ -- 
+-- ########################## -- Functions -- ############################ --
 local function s(...) return sleep(...) end
 local function w(...) return write(...) end
 local function p(...) return print(...) end
 local function tw(...) return term.write(...) end
-local function scp(...) return term.setCursorPos(...) end
+local function scp(x,y) return term.setCursorPos(x,y-1) end
 local function sbc(...) return term.setBackgroundColor(...) end
 local function stc(...) return term.setTextColor(...) end
 local function tc(...) return term.clear(...) end
@@ -14,16 +14,16 @@ local function r(...) return shell.run(...) end
 local function para(...) return parallel.waitForAny(...) end
 local function sw(...) return textutils.slowWrite(...) end
 local function sp(...) return textutils.slowPrint(...) end
--- ########################## -- Einstellungen -- ############################ -- 
+-- ########################## -- Init -- ############################ --
 sbc(32768)
 stc(1)
 os.loadAPI("MineOS/API/SHA")
 os.loadAPI("MineOS/API/BSOD")
-fs.makeDir("MineOS/Task")
-writetask = fs.open("MineOS/Task/task", "w")
-writetask.write([[]])
-writetask.close()
--- ########################## -- ABOUT -- ############################ -- 
+--fs.makeDir("MineOS/Task")F
+--writetask = fs.open("MineOS/Task/task", "w")
+--writetask.write([[]])
+--writetask.close()
+-- ########################## -- ABOUT -- ############################ --
 wEdition = "MineOS"
 wDeveloper = "Pugduddly"
 
@@ -45,1114 +45,991 @@ ChangedName3 = "Free slot"
 ChangedPass3 = "no password"
 -- ########################## -- CLEAR -- ############################ --
 function SystemClear()
- sbc(1)
- r("clear")
- sbc(2048)
- scp(1,1)
- write("                                                   ")
- scp(1,1)
- stc(1)
- w([[Settings]])
- scp(51,1)
- sbc(16384)
- write("X")
-stc(1)
-sbc(8192)
-scp(1,19)
-w([[ Start ]])
-sbc(2048)
-w([[                                              ]])
-timeprint1()
-   scp(8,19)
-   sbc(8)
-r("MineOS/Task/task")
-   sbc(2048)
-sbc(1)
-stc(32768)
+    term.setBackgroundColor(colors.white)
+    term.setTextColor(colors.black)
+    term.clear()
+    term.setCursorPos(1, 1)
 end
 --############################ Get Size ################################--
 function getSize(path)
-  local size = 0
-  for _, file in ipairs(fs.list(path)) do
-    if fs.isDir(fs.combine(path, file)) then
-      --# if it is a directory, recurse.
-      size = size + getSize(fs.combine(path, file))
-    else
-      size = size + fs.getSize(fs.combine(path, file))
+    local size = 0
+    for _, file in ipairs(fs.list(path)) do
+        if fs.isDir(fs.combine(path, file)) then
+            --# if it is a directory, recurse.
+            size = size + getSize(fs.combine(path, file))
+        else
+            size = size + fs.getSize(fs.combine(path, file))
+        end
     end
-  end
-  return size
+    return size
 end
 --############################### Design ##################################--
 function setLayout()
-scp(1,2)
-w("            :")
-scp(1,3)
-w("System Info :")
-scp(1,4)
-w("Profiles    :")
-scp(1,5)
-w("Background  :")
-scp(1,6)
-w("Settings    :")
-scp(1,7)
-w("            :")
-scp(1,8)
-w("            :")
-scp(1,9)
-w("            :")
-scp(1,10)
-w("            :")
-scp(1,11)
-w("            :")
-scp(1,12)
-w("            :")
-scp(1,13)
-w("            :")
-scp(1,14)
-w("            :")
-scp(1,15)
-w("            :")
-scp(1,16)
-w("            :")
-scp(1,17)
-w("            :")
-scp(1,18)
-w("            :")
+    scp(1,2)
+    w("            :")
+    scp(1,3)
+    w("System Info :")
+    scp(1,4)
+    w("Profiles    :")
+    scp(1,5)
+    w("Background  :")
+    scp(1,6)
+    w("Settings    :")
+    scp(1,7)
+    w("            :")
+    scp(1,8)
+    w("            :")
+    scp(1,9)
+    w("            :")
+    scp(1,10)
+    w("            :")
+    scp(1,11)
+    w("            :")
+    scp(1,12)
+    w("            :")
+    scp(1,13)
+    w("            :")
+    scp(1,14)
+    w("            :")
+    scp(1,15)
+    w("            :")
+    scp(1,16)
+    w("            :")
+    scp(1,17)
+    w("            :")
+    scp(1,18)
+    w("            :")
 end
 
 --############################### System Settings ##################################--
 function SystemSettings()
-sbc(256)
-scp(1,6)
-stc(32768)
-write("Settings    ")
+    sbc(256)
+    scp(1,6)
+    stc(32768)
+    write("Settings    ")
 
-sbc(1)
-scp(14,18)
-write("Downloading clocks..")
-scp(14,17)
-sbc(1)
-write("0/3 loaded")
-USATime = "00:00"
-	USATime = http.get("http://www.timeapi.org/edt/now?format=%25k:%25M")
-	USATime = USATime.readAll()
-scp(14,17)
-sbc(1)
-write("1/3 loaded")
-DETime = "00:00"
-	DETime = http.get("http://www.timeapi.org/cet/now?format=%25k:%25M")
-	DETime = DETime.readAll()
-scp(14,17)
-sbc(1)
-write("2/3 loaded")
-ENTime = "00:00"
-	ENTime = http.get("http://www.timeapi.org/utc/now?format=%25k:%25M")
-	ENTime = ENTime.readAll()
-scp(14,17)
-sbc(1)
-write("3/3 loaded")
-sleep(0.1)
-scp(14,18)
-sbc(1)
-write("                    ")
-scp(14,17)
-write("                    ")
+    function SystemSettingsReload()
+        sbc(1)
+        stc(32768)
+        scp(15,3)
+        write("Bootscreen:")
+        scp(16,4)
+        sbc(256)
+        write("ON ")
+        sbc(1)
+        write(" ")
+        sbc(256)
+        write("OFF")
 
+        saveSK = fs.open("MineOS/Config/SaveStart", "r")
+        SaveStart = saveSK.readLine()
+        saveSK.close()
 
-function SystemSettingsReload()
-sbc(1)
-stc(32768)
-scp(15,3)
-write("Clock settings:")
-sbc(256)
-scp(16,4)
-write(" England ")
-sbc(1)
-write(" ")
-sbc(256)
-write(" America ")
-sbc(1)
-write(" ")
-sbc(256)
-write(" Germany ")
-sbc(1)
-write(" ")
-sbc(256)
-write(" MC ")
+        if SaveStart == "false" then
+            scp(16,4)
+            sbc(16384)
+            write("ON ")
+        elseif SaveStart == "trueKeep" then
+            scp(20,4)
+            sbc(16384)
+            write("OFF")
+        end
 
-sbc(1)
-scp(18,5)
-write(ENTime)
-scp(28,5)
-write(USATime)
-scp(38,5)
-write(DETime)
-
-scp(15,7)
-write("Bootscreen:")
-scp(16,8)
-sbc(256)
-write("ON ")
-sbc(1)
-write(" ")
-sbc(256)
-write("OFF")
-
-saveSK = fs.open("MineOS/Config/SaveStart", "r")
-SaveStart = saveSK.readLine()
-saveSK.close()
-
-if SaveStart == "false" then
-scp(16,8)
-sbc(16384)
-write("ON ")
-elseif SaveStart == "trueKeep" then
-scp(20,8)
-sbc(16384)
-write("OFF")
-end
-
-TimeAPI = "EN"
-   TimeAPIR = fs.open("MineOS/Config/TimeAPI", "r")
-   TimeAPI = TimeAPIR.readLine()
-   TimeAPIR.close()
-   
-if TimeAPI == "EN" then
-	scp(16,4)
-	sbc(16384)
-	write(" England ")
-elseif TimeAPI == "USA" then
-	scp(26,4)
-	sbc(16384)
-	write(" America ")
-elseif TimeAPI == "DE" then
-	scp(36,4)
-	sbc(16384)
-	write(" Germany ")
-elseif TimeAPI == "MC" then
-	scp(46,4)
-	sbc(16384)
-	write(" MC ")
-end
-end
-SystemSettingsReload()
+    end
+    SystemSettingsReload()
 end
 --############################### System Info ##################################--
 function SystemInfo()
-sbc(256)
-scp(1,3)
-stc(32768)
-write("System Info ")
-sbc(1)
-scp(15,4)
-stc(256)
-write(wEdition.." "..wVersion)
-scp(15,5)
-write("By "..wDeveloper)
-scp(15,7)
-stc(32768)
-write("System Information:")
+    sbc(256)
+    scp(1,3)
+    stc(32768)
+    write("System Info ")
+    sbc(1)
+    scp(15,4)
+    stc(256)
+    write(wEdition.." "..wVersion)
+    scp(15,5)
+    write("By "..wDeveloper)
+    scp(15,7)
+    stc(32768)
+    write("System Information:")
 
-scp(16,8)
-stc(256)
-usedSpace = getSize("MineOS/")
-write(math.ceil(usedSpace/1048))
-w("KB used of ")
+    scp(16,8)
+    stc(256)
+    usedSpace = getSize("MineOS")
+    write(math.ceil(usedSpace/1048))
+    w("KB used of ")
 
-if realFreeSpace == true then
-FreeSpace = tostring(fs.getFreeSpace("/"))
-write(math.ceil(FreeSpace/9048))
-else
-FreeSpace = MySpace
-write(FreeSpace)
-end
-w("KB")
+    if realFreeSpace == true then
+        FreeSpace = tostring(fs.getFreeSpace("/"))
+        write(math.ceil(FreeSpace/9048))
+    else
+        FreeSpace = MySpace
+        write(FreeSpace)
+    end
+    w("KB")
 
-scp(15,11)
-stc(32768)
-write("User Information:")
-stc(256)
-scp(16,12)
-write("Name: "..dataname1a)
-
-
-scp(16,9)
-if realFreeSpace == true then
-FreeSpace=FreeSpace-usedSpace
-write(math.ceil(FreeSpace/9048))
-else
+    scp(15,11)
+    stc(32768)
+    write("User Information:")
+    stc(256)
+    scp(16,12)
+    write("Name: "..currentUserName)
 
 
-fakespace = (math.ceil(usedSpace/1048))
-FreeSpace=FreeSpace-fakespace
-write(FreeSpace)
-end
+    scp(16,9)
+    if realFreeSpace == true then
+        FreeSpace=FreeSpace-usedSpace
+        write(math.ceil(FreeSpace/9048))
+    else
 
-w("KB Available")
 
-Zoom = "40000"
+        fakespace = (math.ceil(usedSpace/1048))
+        FreeSpace=FreeSpace-fakespace
+        write(FreeSpace)
+    end
 
-scp(15,15)
-sbc(256)
-fs.makeDir("MineOS/Documents")
-write("                                 ")
-SystemSpace = getSize("MineOS/Programs")
-UserSpace = getSize("MineOS/Documents")
-ProgramSpace1 = getSize("MineOS/Backup")
-ProgramSpace2 = getSize("MineOS/Config")
-ProgramSpace3 = getSize("MineOS/Texture")
-ProgramSpace4 = getSize("MineOS/Profile")
-ProgramSpace5 = getSize("MineOS/Task")
-ProgramSpace6 = getSize("MineOS/Online")
-ProgramSpace=ProgramSpace1+ProgramSpace2+ProgramSpace3+ProgramSpace4+ProgramSpace5+ProgramSpace6
-scp(15,15)
-stc(32768)
-SystemSpaceLine = (math.ceil(SystemSpace/Zoom))
-ProgramSpaceLine = (math.ceil(ProgramSpace/Zoom))
-UserSpaceLine = (math.ceil(UserSpace/Zoom))
+    w("KB Available")
 
-for SSL=0,SystemSpaceLine do
-sbc(16384)
-write(" ")
-end
+    Zoom = "40000"
 
-for PSL=0,ProgramSpaceLine do
-sbc(2048)
-write(" ")
-end
+    scp(15,15)
+    sbc(256)
+    --fs.makeDir("MineOS/Documents")
+    write("                                 ")
+    SystemSpace = getSize("MineOS/Programs")
+    --UserSpace = getSize("MineOS/Documents")
+    ProgramSpace2 = getSize("MineOS/Config")
+    ProgramSpace3 = getSize("MineOS/Texture")
+    ProgramSpace4 = getSize("MineOS/Profile")
+    ProgramSpace=ProgramSpace2+ProgramSpace3+ProgramSpace4
+    scp(15,15)
+    stc(32768)
+    SystemSpaceLine = (math.ceil(SystemSpace/Zoom))
+    ProgramSpaceLine = (math.ceil(ProgramSpace/Zoom))
+    --UserSpaceLine = (math.ceil(UserSpace/Zoom))
 
-for USL=0,UserSpaceLine do
-sbc(16)
-write(" ")
-end
+    for SSL=0,SystemSpaceLine do
+        sbc(16384)
+        write(" ")
+    end
 
-scp(15,14)
-sbc(1)
-stc(16384)
-w("  ")
-write(math.ceil(SystemSpace/1048))
-w("KB    ")
+    for PSL=0,ProgramSpaceLine do
+        sbc(2048)
+        write(" ")
+    end
 
-stc(2048)
-write(math.ceil(ProgramSpace/1048))
-w("KB    ")
+    --for USL=0,UserSpaceLine do
+    --    sbc(16)
+    --    write(" ")
+    --end
 
-stc(16)
-write(math.ceil(UserSpace/1048))
-w("KB    ")
+    scp(15,14)
+    sbc(1)
+    stc(16384)
+    w("  ")
+    write(math.ceil(SystemSpace/1048))
+    w("KB    ")
 
-stc(256)
+    stc(2048)
+    write(math.ceil(ProgramSpace/1048))
+    w("KB    ")
 
-if realFreeSpace == true then
-write(math.ceil(FreeSpace/9048))
-else
-write(FreeSpace)
-end
+    --stc(16)
+    --write(math.ceil(UserSpace/1048))
+    --w("KB    ")
 
-w("KB")
+    stc(256)
 
-scp(15,17)
-stc(128)
+    if realFreeSpace == true then
+        write(math.ceil(FreeSpace/9048))
+    else
+        write(FreeSpace)
+    end
 
-sbc(16384)
-write(" ")
-sbc(1)
-write(" System ")
+    w("KB")
 
-sbc(2048)
-write(" ")
-sbc(1)
-write(" Programs ")
+    scp(15,17)
+    stc(128)
 
-sbc(16)
-write(" ")
-sbc(1)
-write(" User ")
+    sbc(16384)
+    write(" ")
+    sbc(1)
+    write(" System ")
 
-sbc(256)
-write(" ")
-sbc(1)
-write(" Free ")
+    sbc(2048)
+    write(" ")
+    sbc(1)
+    write(" Programs ")
+
+    --sbc(16)
+    --write(" ")
+    --sbc(1)
+    --write(" User ")
+
+    sbc(256)
+    write(" ")
+    sbc(1)
+    write(" Free ")
 end
 --############################### Profiles ##################################--
 function SystemProfiles()
-UserEdit = fs.open("MineOS/Profile/User1", "r")
-         if UserEdit then
-          EditName1  = UserEdit.readLine()
-		  EditPass1  = UserEdit.readLine()
-         end
-UserEdit = fs.open("MineOS/Profile/User2", "r")
-         if UserEdit then
-          EditName2  = UserEdit.readLine()
-		  EditPass2  = UserEdit.readLine()
-         end
-UserEdit = fs.open("MineOS/Profile/User3", "r")
-         if UserEdit then
-          EditName3  = UserEdit.readLine()
-		  EditPass3  = UserEdit.readLine()
-         end
---############################### Design ####################################-- 
-sbc(256)
-scp(1,4)
-stc(32768)
-write("Profiles    ")
-sbc(1)
-if dataname1a == EditName1 then
-sbc(128)
-scp(15,3)
-stc(1)
-write("1     ")
-scp(15,4)
-write("      ")
-scp(15,5)
-write("      ")
-scp(15,6)
-write("      ")
-else
-sbc(256)
-scp(15,3)
-stc(32768)
-write("1     ")
-scp(15,4)
-write("      ")
-scp(15,5)
-write("      ")
-scp(15,6)
-write("      ")
-end
+    UserEdit = fs.open("MineOS/Profile/User1", "r")
+    if UserEdit then
+        EditName1  = UserEdit.readLine()
+        EditPass1  = UserEdit.readLine()
+    end
+    UserEdit = fs.open("MineOS/Profile/User2", "r")
+    if UserEdit then
+        EditName2  = UserEdit.readLine()
+        EditPass2  = UserEdit.readLine()
+    end
+    UserEdit = fs.open("MineOS/Profile/User3", "r")
+    if UserEdit then
+        EditName3  = UserEdit.readLine()
+        EditPass3  = UserEdit.readLine()
+    end
+    --############################### Design ####################################--
+    sbc(256)
+    scp(1,4)
+    stc(32768)
+    write("Profiles    ")
+    sbc(1)
+    if currentUserName == EditName1 then
+        sbc(128)
+        scp(15,3)
+        stc(1)
+        write("1     ")
+        scp(15,4)
+        write("      ")
+        scp(15,5)
+        write("      ")
+        scp(15,6)
+        write("      ")
+    else
+        sbc(256)
+        scp(15,3)
+        stc(32768)
+        write("1     ")
+        scp(15,4)
+        write("      ")
+        scp(15,5)
+        write("      ")
+        scp(15,6)
+        write("      ")
+    end
 
-stc(32768)
-sbc(1)
-scp(22,3)
-write("Username:")
-scp(22,4)
-sbc(256)
-write("                             ")
-scp(22,4)
-write(EditName1)
-scp(22,5)
-sbc(1)
-write("Password:")
-scp(22,6)
-sbc(256)
-write("                             ")
-scp(22,6)
-if EditPass1 == "no password" or EditPass1 == SHA.sha256("no password") then
-write("")
-else
-write("********")
-end
-
-
-
-if dataname1a == EditName2 then
-sbc(128)
-scp(15,8)
-stc(1)
-write("2     ")
-scp(15,9)
-write("      ")
-scp(15,10)
-write("      ")
-scp(15,11)
-write("      ")
-else
-sbc(256)
-scp(15,8)
-stc(32768)
-write("2     ")
-scp(15,9)
-write("      ")
-scp(15,10)
-write("      ")
-scp(15,11)
-write("      ")
-end
+    stc(32768)
+    sbc(1)
+    scp(22,3)
+    write("Username:")
+    scp(22,4)
+    sbc(256)
+    write("                             ")
+    scp(22,4)
+    write(EditName1)
+    scp(22,5)
+    sbc(1)
+    write("Password:")
+    scp(22,6)
+    sbc(256)
+    write("                             ")
+    scp(22,6)
+    if EditPass1 == "no password" or EditPass1 == SHA.sha256("no password") then
+        write("")
+    else
+        write("********")
+    end
 
 
 
-stc(32768)
-sbc(1)
-scp(22,8)
-write("Username:")
-scp(22,9)
-sbc(256)
-write("                             ")
-scp(22,9)
-write(EditName2)
-scp(22,10)
-sbc(1)
-write("Password:")
-scp(22,11)
-sbc(256)
-write("                             ")
-scp(22,11)
-if EditPass2 == "no password" or EditPass2 == SHA.sha256("no password") then
-write("")
-else
-write("********")
-end
-
-
-if dataname1a == EditName3 then
-sbc(128)
-scp(15,13)
-stc(1)
-write("3     ")
-scp(15,14)
-write("      ")
-scp(15,15)
-write("      ")
-scp(15,16)
-write("      ")
-else
-sbc(256)
-stc(32768)
-scp(15,13)
-write("3     ")
-scp(15,14)
-write("      ")
-scp(15,15)
-write("      ")
-scp(15,16)
-write("      ")
-end
+    if currentUserName == EditName2 then
+        sbc(128)
+        scp(15,8)
+        stc(1)
+        write("2     ")
+        scp(15,9)
+        write("      ")
+        scp(15,10)
+        write("      ")
+        scp(15,11)
+        write("      ")
+    else
+        sbc(256)
+        scp(15,8)
+        stc(32768)
+        write("2     ")
+        scp(15,9)
+        write("      ")
+        scp(15,10)
+        write("      ")
+        scp(15,11)
+        write("      ")
+    end
 
 
 
+    stc(32768)
+    sbc(1)
+    scp(22,8)
+    write("Username:")
+    scp(22,9)
+    sbc(256)
+    write("                             ")
+    scp(22,9)
+    write(EditName2)
+    scp(22,10)
+    sbc(1)
+    write("Password:")
+    scp(22,11)
+    sbc(256)
+    write("                             ")
+    scp(22,11)
+    if EditPass2 == "no password" or EditPass2 == SHA.sha256("no password") then
+        write("")
+    else
+        write("********")
+    end
 
 
-stc(32768)
-sbc(1)
-scp(22,13)
-write("Username:")
-scp(22,14)
-sbc(256)
-write("                             ")
-scp(22,14)
-write(EditName3)
-scp(22,15)
-sbc(1)
-write("Password:")
-scp(22,16)
-sbc(256)
-write("                             ")
-scp(22,16)
-if EditPass3 == "no password" or EditPass3 == SHA.sha256("no password") then
-write("")
-else
-write("********")
-end
+    if currentUserName == EditName3 then
+        sbc(128)
+        scp(15,13)
+        stc(1)
+        write("3     ")
+        scp(15,14)
+        write("      ")
+        scp(15,15)
+        write("      ")
+        scp(15,16)
+        write("      ")
+    else
+        sbc(256)
+        stc(32768)
+        scp(15,13)
+        write("3     ")
+        scp(15,14)
+        write("      ")
+        scp(15,15)
+        write("      ")
+        scp(15,16)
+        write("      ")
+    end
+
+    stc(32768)
+    sbc(1)
+    scp(22,13)
+    write("Username:")
+    scp(22,14)
+    sbc(256)
+    write("                             ")
+    scp(22,14)
+    write(EditName3)
+    scp(22,15)
+    sbc(1)
+    write("Password:")
+    scp(22,16)
+    sbc(256)
+    write("                             ")
+    scp(22,16)
+    if EditPass3 == "no password" or EditPass3 == SHA.sha256("no password") then
+        write("")
+    else
+        write("********")
+    end
 end
 --############################### Background ##################################--
 function SystemBackground()
-sbc(256)
-scp(1,5)
-stc(32768)
-write("Background  ")
-sbc(1)
-scp(15,3)
-write("Standard backgrounds:")
-sbc(256)
-scp(15,4)
-write(" Minecraft ")
-sbc(1)
-write(" ")
-sbc(256)
-write(" Computer  ")
-sbc(1)
-write(" ")
-sbc(256)
-write(" Logo      ")
-scp(15,6)
-write(" Creeper   ")
-sbc(1)
-write(" ")
-sbc(256)
-write(" Hills     ")
-sbc(1)
-write(" ")
-sbc(256)
-write(" Purple    ")
+    sbc(256)
+    scp(1,5)
+    stc(32768)
+    write("Background  ")
+    sbc(1)
+    scp(15,3)
+    write("Standard backgrounds:")
+    sbc(256)
+    scp(15,4)
+    write(" Minecraft ")
+    sbc(1)
+    write(" ")
+    sbc(256)
+    write(" Computer  ")
+    sbc(1)
+    write(" ")
+    sbc(256)
+    write(" Logo      ")
+    scp(15,6)
+    write(" Creeper   ")
+    sbc(1)
+    write(" ")
+    sbc(256)
+    write(" Hills     ")
+    sbc(1)
+    write(" ")
+    sbc(256)
+    write(" Purple    ")
 
-sbc(1)
-scp(15,8)
-write("Custom backgrounds:")
-sbc(256)
-scp(15,9)
-write(" New ")
-sbc(1)
-write(" ")
-sbc(256)
-write(" Open ")
-sbc(1)
-write(" ")
-sbc(256)
-write(" Pastebin ")
+    sbc(1)
+    scp(15,8)
+    write("Custom backgrounds:")
+    sbc(256)
+    scp(15,9)
+    write(" New ")
+    sbc(1)
+    write(" ")
+    sbc(256)
+    write(" Open ")
+    sbc(1)
+    write(" ")
+    sbc(256)
+    write(" Pastebin ")
 end
 --############################### Autorun ##################################--
-BSOD.doErrorTrap(SystemClear)
-BSOD.doErrorTrap(setLayout)
-BSOD.doErrorTrap(SystemInfo)
+--BSOD.doErrorTrap(SystemClear)
+--BSOD.doErrorTrap(setLayout)
+--BSOD.doErrorTrap(SystemInfo)
+SystemClear()
+setLayout()
+SystemInfo()
 --############################### Mouse ##################################--
 function SystemMouse()
-while true do
-event, button, X, Y = os.pullEvent("mouse_click")
-  if X >= 51 and X <= 51 and Y == 1 then
-   resetDesktop()
-   error("Terminated")
-  break
-  end
-    if X >= 1 and X <= 12 and Y == 3 then
-	  SystemClear()
-	  setLayout()
-      SystemInfo()
-	end
-    if X >= 1 and X <= 12 and Y == 4 then
-	  SystemClear()
-	  setLayout()
-      SystemProfiles()
-                while true do
-                   event, button, X, Y = os.pullEvent("mouse_click")
---############################### Profiles ##################################--
-if X >= 22 and X <= 50 and Y == 4 then
-	                     scp(22,4)
-						 sbc(256)
-						 w("                           ")
-	                     stc(32768)
-						 scp(22,4)
-						 ChangedName1 = read()
-						 
-						 if ChangedName1 == "" then
-						 ChangedName1 = "Guest"
-						 end
-						 
-							if fs.exists("MineOS/Profile/User1") then
-								ChangedNameO1 = fs.open("MineOS/Profile/User1", "w")
-								ChangedNameO1.write(ChangedName1.."\n")
---[[
+    while true do
+        event, button, X, Y = os.pullEvent("mouse_click")
+        Y = Y + 1
+        if X >= 51 and X <= 51 and Y == 1 then
+            resetDesktop()
+            error("Terminated")
+            break
+        end
+        if X >= 1 and X <= 12 and Y == 3 then
+            SystemClear()
+            setLayout()
+            SystemInfo()
+        end
+        if X >= 1 and X <= 12 and Y == 4 then
+            SystemClear()
+            setLayout()
+            SystemProfiles()
+            while true do
+                event, button, X, Y = os.pullEvent("mouse_click")
+                Y = Y + 1
+                --############################### Profiles ##################################--
+                if X >= 22 and X <= 50 and Y == 4 then
+                    scp(22,4)
+                    sbc(256)
+                    w("                           ")
+                    stc(32768)
+                    scp(22,4)
+                    ChangedName1 = read()
+
+                    if ChangedName1 == "" then
+                        ChangedName1 = "Guest"
+                    end
+
+                    if fs.exists("MineOS/Profile/User1") then
+                        ChangedNameO1 = fs.open("MineOS/Profile/User1", "w")
+                        ChangedNameO1.write(ChangedName1.."\n")
+                        --[[
 								if ChangedPass1 == "no password" then
 									ChangedNameO1.write(ChangedPass1)
 								else
 									ChangedNameO1.write(SHA.sha256(ChangedPass1))
 								end
 ]]--
-								ChangedNameO1.write(ChangedPass1)
-								ChangedNameO1.close()
-							end
-		
-							SystemClear()
-							setLayout()
-							SystemProfiles()
-						end
-	                    if X >= 22 and X <= 50 and Y == 6 then
-	                     scp(22,6)
-						 sbc(256)
-						 w("                           ")
-	                     stc(32768)
-						 scp(22,6)
-						 ChangedPass1 = read("*")
-						 
-						 if ChangedPass1 == "" then
-						 ChangedPass1 = "no password"
-						 end
-						 
-							if fs.exists("MineOS/Profile/User1") then
-								ChangedNameO1 = fs.open("MineOS/Profile/User1", "w")
-								ChangedNameO1.write(ChangedName1.."\n")
---[[
+                        ChangedNameO1.write(ChangedPass1)
+                        ChangedNameO1.close()
+                    end
+
+                    SystemClear()
+                    setLayout()
+                    SystemProfiles()
+                end
+                if X >= 22 and X <= 50 and Y == 6 then
+                    scp(22,6)
+                    sbc(256)
+                    w("                           ")
+                    stc(32768)
+                    scp(22,6)
+                    ChangedPass1 = read("*")
+
+                    if ChangedPass1 == "" then
+                        ChangedPass1 = "no password"
+                    end
+
+                    if fs.exists("MineOS/Profile/User1") then
+                        ChangedNameO1 = fs.open("MineOS/Profile/User1", "w")
+                        ChangedNameO1.write(ChangedName1.."\n")
+                        --[[
 								if ChangedPass1 == "no password" then
 									ChangedNameO1.write(ChangedPass1)
 								else
 									ChangedNameO1.write(SHA.sha256(ChangedPass1))
 								end
 ]]--
-								ChangedNameO1.write(ChangedPass1)
-								ChangedNameO1.close()
-							end
-		
-							SystemClear()
-							setLayout()
-							SystemProfiles()
-						end
-if X >= 22 and X <= 50 and Y == 9 then
-	                     scp(22,9)
-						 sbc(256)
-						 w("                           ")
-	                     stc(32768)
-						 scp(22,9)
-						 ChangedName2 = read()
-						 
-						 if ChangedName2 == "" then
-						 ChangedName2 = "Free slot"
-						 end
-						 
-							if fs.exists("MineOS/Profile/User2") then
-								ChangedNameO2 = fs.open("MineOS/Profile/User2", "w")
-								ChangedNameO2.write(ChangedName2.."\n")
---[[
+                        ChangedNameO1.write(ChangedPass1)
+                        ChangedNameO1.close()
+                    end
+
+                    SystemClear()
+                    setLayout()
+                    SystemProfiles()
+                end
+                if X >= 22 and X <= 50 and Y == 9 then
+                    scp(22,9)
+                    sbc(256)
+                    w("                           ")
+                    stc(32768)
+                    scp(22,9)
+                    ChangedName2 = read()
+
+                    if ChangedName2 == "" then
+                        ChangedName2 = "Free slot"
+                    end
+
+                    if fs.exists("MineOS/Profile/User2") then
+                        ChangedNameO2 = fs.open("MineOS/Profile/User2", "w")
+                        ChangedNameO2.write(ChangedName2.."\n")
+                        --[[
 								if ChangedPass2 == "no password" then
 									ChangedNameO2.write(ChangedPass2)
 								else
 									ChangedNameO2.write(SHA.sha256(ChangedPass2))
 								end
 ]]--
-								ChangedNameO2.write(ChangedPass2)
-								ChangedNameO2.close()
-							end
-		
-							SystemClear()
-							setLayout()
-							SystemProfiles()
-						end
-	                    if X >= 22 and X <= 50 and Y == 11 then
-	                     scp(22,11)
-						 sbc(256)
-						 w("                           ")
-	                     stc(32768)
-						 scp(22,11)
-						 ChangedPass2 = read("*")
-						 
-						 if ChangedPass2 == "" then
-						 ChangedPass2 = "no password"
-						 end
-						 
-							if fs.exists("MineOS/Profile/User2") then
-								ChangedNameO2 = fs.open("MineOS/Profile/User2", "w")
-								ChangedNameO2.write(ChangedName2.."\n")
---[[
+                        ChangedNameO2.write(ChangedPass2)
+                        ChangedNameO2.close()
+                    end
+
+                    SystemClear()
+                    setLayout()
+                    SystemProfiles()
+                end
+                if X >= 22 and X <= 50 and Y == 11 then
+                    scp(22,11)
+                    sbc(256)
+                    w("                           ")
+                    stc(32768)
+                    scp(22,11)
+                    ChangedPass2 = read("*")
+
+                    if ChangedPass2 == "" then
+                        ChangedPass2 = "no password"
+                    end
+
+                    if fs.exists("MineOS/Profile/User2") then
+                        ChangedNameO2 = fs.open("MineOS/Profile/User2", "w")
+                        ChangedNameO2.write(ChangedName2.."\n")
+                        --[[
 								if ChangedPass2 == "no password" then
 									ChangedNameO2.write(ChangedPass2)
 								else
 									ChangedNameO2.write(SHA.sha256(ChangedPass2))
 								end
 ]]--
-								ChangedNameO2.write(ChangedPass2)
-								ChangedNameO2.close()
-							end
-		
-							SystemClear()
-							setLayout()
-							SystemProfiles()
-						end
-if X >= 22 and X <= 50 and Y == 14 then
-	                     scp(22,14)
-						 sbc(256)
-						 w("                           ")
-	                     stc(32768)
-						 scp(22,14)
-						 ChangedName3 = read()
-						 
-						 if ChangedName3 == "" then
-						 ChangedName3 = "Free slot"
-						 end
-						 
-							if fs.exists("MineOS/Profile/User3") then
-								ChangedNameO3 = fs.open("MineOS/Profile/User3", "w")
-								ChangedNameO3.write(ChangedName3.."\n")
---[[
+                        ChangedNameO2.write(ChangedPass2)
+                        ChangedNameO2.close()
+                    end
+
+                    SystemClear()
+                    setLayout()
+                    SystemProfiles()
+                end
+                if X >= 22 and X <= 50 and Y == 14 then
+                    scp(22,14)
+                    sbc(256)
+                    w("                           ")
+                    stc(32768)
+                    scp(22,14)
+                    ChangedName3 = read()
+
+                    if ChangedName3 == "" then
+                        ChangedName3 = "Free slot"
+                    end
+
+                    if fs.exists("MineOS/Profile/User3") then
+                        ChangedNameO3 = fs.open("MineOS/Profile/User3", "w")
+                        ChangedNameO3.write(ChangedName3.."\n")
+                        --[[
 								if ChangedPass3 == "no password" then
 									ChangedNameO3.write(ChangedPass3)
 								else
 									ChangedNameO3.write(SHA.sha256(ChangedPass3))
 								end
 ]]--
-								ChangedNameO3.write(ChangedPass3)
-								ChangedNameO3.close()
-							end
-		
-							SystemClear()
-							setLayout()
-							SystemProfiles()
-						end
-	                    if X >= 22 and X <= 50 and Y == 16 then
-	                     scp(22,16)
-						 sbc(256)
-						 w("                           ")
-	                     stc(32768)
-						 scp(22,16)
-						 ChangedPass3 = read("*")
-						 
-						 if ChangedPass3 == "" then
-						 ChangedPass3 = "no password"
-						 end
-						 
-							if fs.exists("MineOS/Profile/User3") then
-								ChangedNameO3 = fs.open("MineOS/Profile/User3", "w")
-								ChangedNameO3.write(ChangedName3.."\n")
---[[
+                        ChangedNameO3.write(ChangedPass3)
+                        ChangedNameO3.close()
+                    end
+
+                    SystemClear()
+                    setLayout()
+                    SystemProfiles()
+                end
+                if X >= 22 and X <= 50 and Y == 16 then
+                    scp(22,16)
+                    sbc(256)
+                    w("                           ")
+                    stc(32768)
+                    scp(22,16)
+                    ChangedPass3 = read("*")
+
+                    if ChangedPass3 == "" then
+                        ChangedPass3 = "no password"
+                    end
+
+                    if fs.exists("MineOS/Profile/User3") then
+                        ChangedNameO3 = fs.open("MineOS/Profile/User3", "w")
+                        ChangedNameO3.write(ChangedName3.."\n")
+                        --[[
 								if ChangedPass3 == "no password" then
 									ChangedNameO3.write(ChangedPass3)
 								else
 									ChangedNameO3.write(SHA.sha256(ChangedPass3))
 								end
 ]]--
-								ChangedNameO3.write(ChangedPass3)
-								ChangedNameO3.close()
-							end
-		
-							SystemClear()
-							setLayout()
-							SystemProfiles()
-						end
-    if X >= 1 and X <= 12 and Y == 6 then
-	  SystemClear()
-	  setLayout()
-      SystemSettings()
-	  break
-	end
-    if X >= 1 and X <= 12 and Y == 3 then
-	  SystemClear()
-	  setLayout()
-      SystemInfo()
-	  break
-	end
-    if X >= 1 and X <= 12 and Y == 5 then
-	  SystemClear()
-	  setLayout()
-      SystemBackground()
-	  break
-	end
-	if X >= 1 and X <= 6 and Y == 19 then
-      startmenu()
-	  error("Terminated!")
-	  break
-	end		
-  if X >= 51 and X <= 51 and Y == 1 then
-   resetDesktop()
-   error("Terminated")
-  break
-  end		  
- end	  
-end
+                        ChangedNameO3.write(ChangedPass3)
+                        ChangedNameO3.close()
+                    end
 
-    if X >= 1 and X <= 12 and Y == 5 then
-	  SystemClear()
-	  setLayout()
-       SystemBackground()
-                while true do
-                   event, button, X, Y = os.pullEvent("mouse_click")
---############################### Background ##################################--
---############## Design 1 ################--
-if X >= 15 and X <= 25 and Y == 4 then 
-fs.delete("MineOS/Texture/Desktop/"..dataname1a.."/1")
-fs.copy("MineOS/Texture/Desktop/1", "MineOS/Texture/Desktop/"..dataname1a.."/1")
-scp(15,4)
-sbc(16384)
-write(" Minecraft ")
-sbc(256)
-sleep(0.2)
-scp(15,4)
-write(" Minecraft ")
-sbc(1)
-end
---############## Design 2 ################--
-if X >= 27 and X <= 37 and Y == 4 then 
-fs.delete("MineOS/Texture/Desktop/"..dataname1a.."/1")
-fs.copy("MineOS/Texture/Desktop/2", "MineOS/Texture/Desktop/"..dataname1a.."/1")
-scp(27,4)
-sbc(16384)
-write(" Computer  ")
-sbc(256)
-sleep(0.2)
-scp(27,4)
-write(" Computer  ")
-sbc(1)
-end
---############## Design 3 ################--
-if X >= 39 and X <= 49 and Y == 4 then 
-fs.delete("MineOS/Texture/Desktop/"..dataname1a.."/1")
-fs.copy("MineOS/Texture/Desktop/3", "MineOS/Texture/Desktop/"..dataname1a.."/1")
-scp(39,4)
-sbc(16384)
-write(" Logo      ")
-sbc(256)
-sleep(0.2)
-scp(39,4)
-write(" Logo      ")
-sbc(1)
-end
---############## Design 4 ################--
-if X >= 15 and X <= 25 and Y == 6 then 
-fs.delete("MineOS/Texture/Desktop/"..dataname1a.."/1")
-fs.copy("MineOS/Texture/Desktop/4", "MineOS/Texture/Desktop/"..dataname1a.."/1")
-scp(15,6)
-sbc(16384)
-write(" Creeper   ")
-sbc(256)
-sleep(0.2)
-scp(15,6)
-write(" Creeper   ")
-sbc(1)
-end
---############## Design 5 ################--
-if X >= 27 and X <= 37 and Y == 6 then 
-fs.delete("MineOS/Texture/Desktop/"..dataname1a.."/1")
-fs.copy("MineOS/Texture/Desktop/5", "MineOS/Texture/Desktop/"..dataname1a.."/1")
-scp(27,6)
-sbc(16384)
-write(" Hills     ")
-sbc(256)
-sleep(0.2)
-scp(27,6)
-write(" Hills     ")
-sbc(1)
-end
---############## Design 6 ################--
-if X >= 39 and X <= 49 and Y == 6 then 
-fs.delete("MineOS/Texture/Desktop/"..dataname1a.."/1")
-fs.copy("MineOS/Texture/Desktop/6", "MineOS/Texture/Desktop/"..dataname1a.."/1")
-scp(39,6)
-sbc(16384)
-write(" Purple    ")
-sbc(256)
-sleep(0.2)
-scp(39,6)
-write(" Purple    ")
-sbc(1)
-end
---############## Custom # NEW ###############--
-if X >= 15 and X <= 19 and Y == 9 then
-r("MineOS/Programs/Paint MineOS/Texture/Desktop/"..dataname1a.."/1")
-r("MineOS/Programs/Settings")
-end
---############## Custom # Open ###############--
-if X >= 21 and X <= 26 and Y == 9 then 
-	sbc(2048)
-	stc(1)
-	scp(15,5)
-	w("Open File         ")
-	sbc(16384)
-	w("X")
-	sbc(1)
-	stc(32768)
-	scp(15,6)
-	w(": Name:           :")
-	scp(15,7)
-	sbc(1)
---	w(": ")
---	sbc(258)
---	w("               ")
---	sbc(1)
---	w(" :")
-	w(":                 :")
-	sbc(1)
-	scp(15,8)
-	w(":                 :")
-	scp(15,9)
-	w("+-----------------+")
-	scp(17,7)
-	sbc(258)
-	stc(128)
-	w("")
-	scp(17,7)
-	stc(32768)
-	fileaddB = read()
-	  if fileaddB == "" then
-r("MineOS/Programs/Settings")
-error("Terminated")
-	  elseif fs.exists(fileaddB) then
-	  sbc(1)
-	  scp(1,17)
-	    fs.delete("MineOS/Texture/Desktop/"..dataname1a.."/1")
-	    fs.copy(fileaddB, "MineOS/Texture/Desktop/"..dataname1a.."/1")
-		sbc(256)
-		scp(17,7)
-		stc(16384)
-		w("File added!    ")
-        sleep(1)
-r("MineOS/Programs/Settings")
-error("Terminated")
-	  elseif not fs.exists(fileaddB) then
-	    scp(17,7)
-		stc(16384)
-		w("File not found!")
-        sleep(2)
-r("MineOS/Programs/Settings")
-error("Terminated")
-	  end
-    break
-   end
---############## Custom # Pastebin ###############--
-if X >= 26 and X <= 35 and Y == 9 then 
-	sbc(2048)
-	stc(1)
-	scp(15,5)
-	w("Download file     ")
-	sbc(16384)
-	w("X")
-	sbc(1)
-	stc(32768)
-	scp(15,6)
-	w(": Code:           :")
-	scp(15,7)
-	sbc(1)
---	w(": ")
---	sbc(258)
---	w([[               ]])
---	sbc(1)
---	w(" :")
-	w(":                 :")
-	sbc(1)
-	scp(15,8)
-	w(":                 :")
-	scp(15,9)
-	w("+-----------------+")
-	scp(17,7)
-	sbc(258)
-	stc(128)
-	w("")
-	scp(17,7)
-	stc(32768)
-	fileaddB2 = read()
-	  if fileaddB2 == "" then
-        r("MineOS/Programs/Settings")
-        error("Terminated")
-      else
+                    SystemClear()
+                    setLayout()
+                    SystemProfiles()
+                end
+                if X >= 1 and X <= 12 and Y == 6 then
+                    SystemClear()
+                    setLayout()
+                    SystemSettings()
+                    break
+                end
+                if X >= 1 and X <= 12 and Y == 3 then
+                    SystemClear()
+                    setLayout()
+                    SystemInfo()
+                    break
+                end
+                if X >= 1 and X <= 12 and Y == 5 then
+                    SystemClear()
+                    setLayout()
+                    SystemBackground()
+                    break
+                end
+                if X >= 1 and X <= 6 and Y == 19 then
+                    startmenu()
+                    error("Terminated!")
+                    break
+                end
+                if X >= 51 and X <= 51 and Y == 1 then
+                    resetDesktop()
+                    error("Terminated")
+                    break
+                end
+            end
+        end
 
-	local response = http.get(
-		"http://pastebin.com/raw.php?i="..textutils.urlEncode( fileaddB2 )
-		)
-		
-	if response then
-fs.delete("MineOS/Texture/Desktop/"..dataname1a.."/1")
-		local sResponse = response.readAll()
-		response.close()
-		
-		local file = fs.open("MineOS/Texture/Desktop/"..dataname1a.."/1", "w" )
-		file.write( sResponse )
-		file.close()
-	else
-r("MineOS/Programs/Settings")
-error("Terminated")
-end
-	  sbc(1)
-	  scp(1,17)
-		sbc(256)
-		scp(17,7)
-		stc(16384)
-		w("File added!    ")
-        sleep(1)
-r("MineOS/Programs/Settings")
-error("Terminated")
-	  end
-    break
-   end
---########################################--
-    if X >= 1 and X <= 12 and Y == 3 then
-	  SystemClear()
-	  setLayout()
-      SystemInfo()
-	  break
-	end
-    if X >= 1 and X <= 12 and Y == 4 then
-	  SystemMouse()
-	  SystemClear()
-	  setLayout()
-      SystemProfiles()
-	  break
-	end
-    if X >= 1 and X <= 12 and Y == 6 then
-	  SystemClear()
-	  setLayout()
-      SystemSettings()
-	  break
-	end
-	if X >= 1 and X <= 6 and Y == 19 then
-      startmenu()
-	  error("Terminated!")
-	  break
-	end	
-  if X >= 51 and X <= 51 and Y == 1 then
-   resetDesktop()
-   error("Terminated")
-  break
-  end
-end
+        if X >= 1 and X <= 12 and Y == 5 then
+            SystemClear()
+            setLayout()
+            SystemBackground()
+            while true do
+                event, button, X, Y = os.pullEvent("mouse_click")
+                Y = Y + 1
+                --############################### Background ##################################--
+                --############## Design 1 ################--
+                if X >= 15 and X <= 25 and Y == 4 then
+                    fs.delete("MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    fs.copy("MineOS/Texture/Desktop/1", "MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    scp(15,4)
+                    sbc(16384)
+                    write(" Minecraft ")
+                    sbc(256)
+                    sleep(0.2)
+                    scp(15,4)
+                    write(" Minecraft ")
+                    sbc(1)
+                end
+                --############## Design 2 ################--
+                if X >= 27 and X <= 37 and Y == 4 then
+                    fs.delete("MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    fs.copy("MineOS/Texture/Desktop/2", "MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    scp(27,4)
+                    sbc(16384)
+                    write(" Computer  ")
+                    sbc(256)
+                    sleep(0.2)
+                    scp(27,4)
+                    write(" Computer  ")
+                    sbc(1)
+                end
+                --############## Design 3 ################--
+                if X >= 39 and X <= 49 and Y == 4 then
+                    fs.delete("MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    fs.copy("MineOS/Texture/Desktop/3", "MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    scp(39,4)
+                    sbc(16384)
+                    write(" Logo      ")
+                    sbc(256)
+                    sleep(0.2)
+                    scp(39,4)
+                    write(" Logo      ")
+                    sbc(1)
+                end
+                --############## Design 4 ################--
+                if X >= 15 and X <= 25 and Y == 6 then
+                    fs.delete("MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    fs.copy("MineOS/Texture/Desktop/4", "MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    scp(15,6)
+                    sbc(16384)
+                    write(" Creeper   ")
+                    sbc(256)
+                    sleep(0.2)
+                    scp(15,6)
+                    write(" Creeper   ")
+                    sbc(1)
+                end
+                --############## Design 5 ################--
+                if X >= 27 and X <= 37 and Y == 6 then
+                    fs.delete("MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    fs.copy("MineOS/Texture/Desktop/5", "MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    scp(27,6)
+                    sbc(16384)
+                    write(" Hills     ")
+                    sbc(256)
+                    sleep(0.2)
+                    scp(27,6)
+                    write(" Hills     ")
+                    sbc(1)
+                end
+                --############## Design 6 ################--
+                if X >= 39 and X <= 49 and Y == 6 then
+                    fs.delete("MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    fs.copy("MineOS/Texture/Desktop/6", "MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    scp(39,6)
+                    sbc(16384)
+                    write(" Purple    ")
+                    sbc(256)
+                    sleep(0.2)
+                    scp(39,6)
+                    write(" Purple    ")
+                    sbc(1)
+                end
+                --############## Custom # NEW ###############--
+                if X >= 15 and X <= 19 and Y == 9 then
+                    r("MineOS/Programs/Paint MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    r("MineOS/Programs/Settings")
+                end
+                --############## Custom # Open ###############--
+                if X >= 21 and X <= 26 and Y == 9 then
+                    sbc(2048)
+                    stc(1)
+                    scp(15,5)
+                    w("Open File         ")
+                    sbc(16384)
+                    w("X")
+                    sbc(1)
+                    stc(32768)
+                    scp(15,6)
+                    w(": Name:           :")
+                    scp(15,7)
+                    sbc(1)
+                    --	w(": ")
+                    --	sbc(258)
+                    --	w("               ")
+                    --	sbc(1)
+                    --	w(" :")
+                    w(":                 :")
+                    sbc(1)
+                    scp(15,8)
+                    w(":                 :")
+                    scp(15,9)
+                    w("+-----------------+")
+                    scp(17,7)
+                    sbc(258)
+                    stc(128)
+                    w("")
+                    scp(17,7)
+                    stc(32768)
+                    fileaddB = read()
+                    if fileaddB == "" then
+                        r("MineOS/Programs/Settings")
+                        error("Terminated")
+                    elseif fs.exists(fileaddB) then
+                        sbc(1)
+                        scp(1,17)
+                        fs.delete("MineOS/Texture/Desktop/"..currentUserName.."/1")
+                        fs.copy(fileaddB, "MineOS/Texture/Desktop/"..currentUserName.."/1")
+                        sbc(256)
+                        scp(17,7)
+                        stc(16384)
+                        w("File added!    ")
+                        sleep(1)
+                        r("MineOS/Programs/Settings")
+                        error("Terminated")
+                    elseif not fs.exists(fileaddB) then
+                        scp(17,7)
+                        stc(16384)
+                        w("File not found!")
+                        sleep(2)
+                        r("MineOS/Programs/Settings")
+                        error("Terminated")
+                    end
+                    break
+                end
+                --############## Custom # Pastebin ###############--
+                if X >= 26 and X <= 35 and Y == 9 then
+                    sbc(2048)
+                    stc(1)
+                    scp(15,5)
+                    w("Download file     ")
+                    sbc(16384)
+                    w("X")
+                    sbc(1)
+                    stc(32768)
+                    scp(15,6)
+                    w(": Code:           :")
+                    scp(15,7)
+                    sbc(1)
+                    --	w(": ")
+                    --	sbc(258)
+                    --	w([[               ]])
+                    --	sbc(1)
+                    --	w(" :")
+                    w(":                 :")
+                    sbc(1)
+                    scp(15,8)
+                    w(":                 :")
+                    scp(15,9)
+                    w("+-----------------+")
+                    scp(17,7)
+                    sbc(258)
+                    stc(128)
+                    w("")
+                    scp(17,7)
+                    stc(32768)
+                    fileaddB2 = read()
+                    if fileaddB2 == "" then
+                        r("MineOS/Programs/Settings")
+                        error("Terminated")
+                    else
 
---############################################################################--
+                        local response = http.get(
+                            "http://pastebin.com/raw.php?i="..textutils.urlEncode( fileaddB2 )
+                        )
+
+                        if response then
+                            fs.delete("MineOS/Texture/Desktop/"..currentUserName.."/1")
+                            local sResponse = response.readAll()
+                            response.close()
+
+                            local file = fs.open("MineOS/Texture/Desktop/"..currentUserName.."/1", "w" )
+                            file.write( sResponse )
+                            file.close()
+                        else
+                            r("MineOS/Programs/Settings")
+                            error("Terminated")
+                        end
+                        sbc(1)
+                        scp(1,17)
+                        sbc(256)
+                        scp(17,7)
+                        stc(16384)
+                        w("File added!    ")
+                        sleep(1)
+                        r("MineOS/Programs/Settings")
+                        error("Terminated")
+                    end
+                    break
+                end
+                --########################################--
+                if X >= 1 and X <= 12 and Y == 3 then
+                    SystemClear()
+                    setLayout()
+                    SystemInfo()
+                    break
+                end
+                if X >= 1 and X <= 12 and Y == 4 then
+                    SystemMouse()
+                    SystemClear()
+                    setLayout()
+                    SystemProfiles()
+                    break
+                end
+                if X >= 1 and X <= 12 and Y == 6 then
+                    SystemClear()
+                    setLayout()
+                    SystemSettings()
+                    break
+                end
+                if X >= 1 and X <= 6 and Y == 19 then
+                    startmenu()
+                    error("Terminated!")
+                    break
+                end
+                if X >= 51 and X <= 51 and Y == 1 then
+                    resetDesktop()
+                    error("Terminated")
+                    break
+                end
+            end
+
+            --############################################################################--
+        end
+        if X >= 1 and X <= 12 and Y == 6 then
+            SystemClear()
+            setLayout()
+            SystemSettings()
+            while true do
+                event, button, X, Y = os.pullEvent("mouse_click")
+                Y = Y + 1
+                if X >= 16 and X <= 18 and Y == 4 then
+                    saveSK = fs.open("MineOS/Config/SaveStart", "w")
+                    saveSK.write("false") -- false for no fast start
+                    saveSK.close()
+                    SystemSettingsReload()
+                end
+                if X >= 20 and X <= 23 and Y == 4 then
+                    saveSK = fs.open("MineOS/Config/SaveStart", "w")
+                    saveSK.write("trueKeep") -- true for fast start
+                    saveSK.close()
+                    SystemSettingsReload()
+                end
+                --########################################--
+                if X >= 1 and X <= 12 and Y == 3 then
+                    SystemClear()
+                    setLayout()
+                    SystemInfo()
+                    break
+                end
+                if X >= 1 and X <= 12 and Y == 4 then
+                    SystemMouse()
+                    SystemClear()
+                    setLayout()
+                    SystemProfiles()
+                    break
+                end
+                if X >= 1 and X <= 6 and Y == 19 then
+                    startmenu()
+                    error("Terminated!")
+                    break
+                end
+                if X >= 1 and X <= 12 and Y == 5 then
+                    SystemMouse()
+                    SystemClear()
+                    setLayout()
+                    SystemBackground()
+                    break
+                end
+                if X >= 51 and X <= 51 and Y == 1 then
+                    resetDesktop()
+                    error("Terminated")
+                    break
+                end
+            end
+        end
+
+
+        if X >= 1 and X <= 6 and Y == 19 then
+            startmenu()
+        end
+    end
 end
-    if X >= 1 and X <= 12 and Y == 6 then
-	  SystemClear()
-	  setLayout()
-      SystemSettings()
-                while true do
-                   event, button, X, Y = os.pullEvent("mouse_click")
-				     if X >= 16 and X <= 24 and Y == 4 then
-						TimeAPI = fs.open("MineOS/Config/TimeAPI", "w")
-						TimeAPI.write("EN")
-						TimeAPI.close()
-      SystemSettings()
-				     end
-				     if X >= 26 and X <= 34 and Y == 4 then
-						TimeAPI = fs.open("MineOS/Config/TimeAPI", "w")
-						TimeAPI.write("USA")
-						TimeAPI.close()
-      SystemSettings()
-				     end
-				     if X >= 36 and X <= 44 and Y == 4 then 
-						TimeAPI = fs.open("MineOS/Config/TimeAPI", "w")
-						TimeAPI.write("DE")
-						TimeAPI.close()
-      SystemSettings() 
-				     end
-				     if X >= 46 and X <= 50 and Y == 4 then 
-						TimeAPI = fs.open("MineOS/Config/TimeAPI", "w")
-						TimeAPI.write("MC")
-						TimeAPI.close()
-      SystemSettings() 
-				     end
-				     if X >= 16 and X <= 18 and Y == 8 then 
-						saveSK = fs.open("MineOS/Config/SaveStart", "w")
-						saveSK.write("false") -- false for no fast start
-						saveSK.close()
-      SystemSettingsReload() 
-                     end
-				     if X >= 20 and X <= 23 and Y == 8 then 
-						saveSK = fs.open("MineOS/Config/SaveStart", "w")
-						saveSK.write("trueKeep") -- true for fast start
-						saveSK.close()
-      SystemSettingsReload() 
-                     end
---########################################--
-    if X >= 1 and X <= 12 and Y == 3 then
-	  SystemClear()
-	  setLayout()
-      SystemInfo()
-	  break
-	end
-    if X >= 1 and X <= 12 and Y == 4 then
-	  SystemMouse()
-	  SystemClear()
-	  setLayout()
-      SystemProfiles()
-	  break
-	end
-	if X >= 1 and X <= 6 and Y == 19 then
-      startmenu()
-	  error("Terminated!")
-	  break
-	end	
-    if X >= 1 and X <= 12 and Y == 5 then
-      SystemMouse()
-	  SystemClear()
-	  setLayout()
-      SystemBackground()
-	 break
-	end
-  if X >= 51 and X <= 51 and Y == 1 then
-   resetDesktop()
-   error("Terminated")
-  break
-  end
-   end
-  end
-				   
-				   
-	if X >= 1 and X <= 6 and Y == 19 then
-      startmenu()
-	end
- end
-end
-BSOD.doErrorTrap(SystemMouse)
+--BSOD.doErrorTrap(SystemMouse)
+SystemMouse()

@@ -6,8 +6,6 @@
 			BigSHinyToys
 		
 		note: send link to nightin9ale on CC forums
-		
-		Edited for MineOS by Evan Carlson
 --]]
 
 local tArgs = {...}
@@ -15,7 +13,7 @@ local ver = "1.4"
 local sTitle = "File Browser"
 local bugTest, norun, dir, showAll
 local _tArgs = {}
-local config = "explorer.cfg"
+local config = "mouse.cfg"
 
 local temp
 if shell and shell.getRunningProgram then
@@ -521,8 +519,7 @@ local function dialogBox(title,message,options, h, w)
 	local ofC = math.ceil((boxW/2)) - math.ceil((space/2))
 	
 	local function drawBox()
---		printC(ofsX,ofsY,dialogTitle.txt,dialogTitle.back," "..title..string.rep(" ",boxW-#title-5).."_[]")
-		printC(ofsX,ofsY,dialogTitle.txt,dialogTitle.back," "..title..string.rep(" ",boxW-#title-5).."   ")
+		printC(ofsX,ofsY,dialogTitle.txt,dialogTitle.back," "..title..string.rep(" ",boxW-#title-2))
 		term.setBackgroundColor(colors.red)
 		term.setTextColor(colors.white)
 		term.write("X")
@@ -589,34 +586,38 @@ local function stringPath() -- compacted this a lot
 end
 
 local function osRunSpaces(sFileLocation,...) -- getRunningProgram() ["shell"] = shell
-	shell.run("MineOS/Programs/Window "..sFileLocation)
---[[
-	clear()
-	if os.newThread then
-		os.newThread(false,...)
-	else
-	local fProg,probblem = loadfile(sFileLocation)
-		if fProg then
-			local tEnv = {["shell"] = {}}
-			setmetatable(tEnv.shell,{ __index = shell})
-			tEnv.shell.getRunningProgram = function()
-				return sFileLocation
-			end
-			setmetatable(tEnv,{ __index = _G})
-			setfenv(fProg,tEnv)
-			local test,probblem = pcall(fProg,...)
-			if not test then
-				print(probblem)
-				dialogBox("ERROR",tostring(probblem),{"ok"},3,30)
-			else
-				return true
-			end
-		else
-			print(probblem)
-			dialogBox("ERROR",tostring(probblem),{"ok"},3,30)
-		end
-	end
-]]--
+	if shell.openTab then
+        local nTask = shell.openTab(sFileLocation, ...)
+        if nTask then
+            shell.switchTab(nTask)
+        end
+    else
+        clear()
+        if os.newThread then
+            os.newThread(false,...)
+        else
+        local fProg,probblem = loadfile(sFileLocation)
+            if fProg then
+                local tEnv = {["shell"] = {}}
+                setmetatable(tEnv.shell,{ __index = shell})
+                tEnv.shell.getRunningProgram = function()
+                    return sFileLocation
+                end
+                setmetatable(tEnv,{ __index = _G})
+                setfenv(fProg,tEnv)
+                local test,probblem = pcall(fProg,...)
+                if not test then
+                    print(probblem)
+                    dialogBox("ERROR",tostring(probblem),{"ok"},3,30)
+                else
+                    return true
+                end
+            else
+                print(probblem)
+                dialogBox("ERROR",tostring(probblem),{"ok"},3,30)
+            end
+        end
+    end
 end
 
 local function rClickMenu(title,tList,tItem,posX,posY)
@@ -688,7 +689,7 @@ local function rClickMenu(title,tList,tItem,posX,posY)
 								)
 							)
 					else
-						dialogBox("ERROR:","something up with new rMenu",{"ok"})
+						dialogBox("ERROR:","somthing up with new rMenu",{"ok"})
 					end
 				else
 					return
@@ -845,8 +846,8 @@ local function fileSelect(mode) -- save_file open_file browse < not yet implemen
 	local cut = false
 	
 	local termX,termY = term.getSize()
-	local offsetX,offsetY = 1,1
-	local hight,width = math.ceil(termY-2),math.ceil(termX-2)
+	local offsetX,offsetY = 0,-1
+	local hight,width = math.ceil(termY + 1),math.ceil(termX + 1)
 	local oldHight,oldWidth
 	
 	-- offsets
@@ -880,12 +881,12 @@ local function fileSelect(mode) -- save_file open_file browse < not yet implemen
 		if not fs.exists(sPath) then
 			path = {}
 			sPath = stringPath()
-			dialogBox("ERROR:","Path no longer exists",{"ok"})
+			dialogBox("ERROR","Path no longer exists",{"ok"})
 		end
 		local test,list = pcall(fs.list,sPath) -- stopes fs.list crash
 		if list == nil then
 			list = {}
-			dialogBox("ERROR : ","fs.list crashed",{"ok"})
+			dialogBox("ERROR","fs.list crashed",{"ok"})
 		end
 		if #path == 0 then
 			for i,v in pairs(rs.getSides()) do
@@ -1134,18 +1135,10 @@ local function fileSelect(mode) -- save_file open_file browse < not yet implemen
 			flag = false
 			-- clear
 			if oldHight ~= hight and oldWidth ~= width then
---				term.setBackgroundColor(colors.black)
---				term.clear()
-				paintutils.drawImage(paintutils.loadImage("MineOS/Texture/Desktop/"..dataname1a.."/1"), 1, 1)
-				term.setTextColor(1)
-				term.setBackgroundColor(8192)
-				term.setCursorPos(1,19)
-				write([[ Start ]])
-				term.setBackgroundColor(2048)
-				write([[                                              ]])
+				term.setBackgroundColor(colors.black)
+				term.clear()
 				oldHight,oldWidth = hight,width
 			end
-			GetTime()
 			-- draw top title bar
 			local b = tbarW - #title -2
 			if b < 0 then
@@ -1216,12 +1209,14 @@ local function fileSelect(mode) -- save_file open_file browse < not yet implemen
 		end
 		
 		-- react to events
-		local event = {os.pullEvent()}
+		local event = {os.pullEventRaw()}
 		
-		if event[1] == "mouse_click" then
-			if event[3] >= 1 and event[3] <= 6 and event[4] == 19 then  -- start menu support :)
-				startmenu()
-			end
+        if event[1] == "terminate" then
+            --if dialogBox("Confirm","Are you sure you want to exit?",{"yes","no"}) == 1 then
+                bRun = false
+            --end
+            flag = true
+		elseif event[1] == "mouse_click" then
 			if inBouwndry(event[3],event[4],boxOffX+1,boxOffY+1,boxW,boxH) then
 				local selected = tItemList[event[4]+listOff-boxOffY]
 				if selected and inBouwndry(event[3],event[4],boxOffX+1,event[4],#selected.n + 4,1) then
@@ -1234,7 +1229,6 @@ local function fileSelect(mode) -- save_file open_file browse < not yet implemen
 							newList()
 						elseif selected.id == "file" then
 							if dialogBox("Run file?",selected.n,{"yes","no"}) == 1 then
-								resetScreen()
 								osRunSpaces(stringPath()..fSlash..selected.n)
 							end
 						flag = true
@@ -1253,10 +1247,9 @@ local function fileSelect(mode) -- save_file open_file browse < not yet implemen
 					flag = true
 				end
 			elseif event[2] == 1 and event[3] == exitX and event[4] == exitY then
---				if dialogBox("Confirm","Exit application",{"yes","no"}) == 1 then
---					bRun = false
---				end
-				bRun = false
+				--if dialogBox("Confirm","Are you sure you want to exit?",{"yes","no"}) == 1 then
+					bRun = false
+				--end
 				flag = true
 			elseif event[2] == 1 then
 				scrollBar(event[3],event[4])
@@ -1282,8 +1275,8 @@ local function fileSelect(mode) -- save_file open_file browse < not yet implemen
 			newList()
 		elseif event[1] == "window_resize" then
 			termX,termY = term.getSize()
-			offsetX,offsetY = 1,1
-			hight,width = math.ceil(termY-2),math.ceil(termX-2)
+			offsetX,offsetY = 0,0
+			hight,width = math.ceil(termY + 1),math.ceil(termX + 1)
 			
 			boxOffX,boxOffY = offsetX,offsetY + 2
 			boxH,boxW = hight - 2 ,width - 2
@@ -1315,5 +1308,3 @@ local function main()
 end
 
 local trash = (norun or main())
-
-shell.run("MineOS/Programs/Desktop")

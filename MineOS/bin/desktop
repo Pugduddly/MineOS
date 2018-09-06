@@ -1,0 +1,621 @@
+--[[
+
+   MineOS Desktop
+
+   Copyright 2018 Pugduddly <Pugduddly@gmail.com>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+   MA 02110-1301, USA.
+   
+]]--
+
+local function main()
+
+-- Setup process switching
+local parentTerm = term.current()
+local w,h = parentTerm.getSize()
+
+local tProcesses = {}
+local tStartMenu = {
+    {"CraftOS", {"/rom/programs/shell"}},
+    {"Explorer", {"/rom/programs/shell", "/MineOS/Programs/Explorer"}},
+    {"Firewolf", {"/rom/programs/shell", "/MineOS/Programs/Firewolf"}},
+    {"Settings", {"/MineOS/Programs/Settings"}},
+    {"", {}},
+    {"Shutdown", {"/MineOS/bin/shutdown"}, true},
+    {"Reboot", {"/MineOS/bin/reboot"}, true}
+}
+local nCurrentProcess = nil
+local nRunningProcess = nil
+local nInterval = 0.1
+local bShowMenu = false
+local bWindowsResized = false
+local bStartMenuOpen = false
+local bIsRunning = true
+
+local timer = nil
+
+local envVars = {}
+
+if currentUserName == nil then
+    currentUserName = "Guest"
+end
+
+local function selectProcess(n)
+    --if nCurrentProcess ~= n then
+    for i = 1, 2 do
+        if nCurrentProcess then
+            local tOldProcess = tProcesses[nCurrentProcess]
+            tOldProcess.window.setVisible(false)
+        end
+        nCurrentProcess = n
+        if nCurrentProcess then
+            local tNewProcess = tProcesses[nCurrentProcess]
+            tNewProcess.window.setVisible(true)
+            tNewProcess.bInteracted = true
+        end
+    end
+    --end
+end
+
+local function deselectProcess(n)
+    if nCurrentProcess then
+        local tOldProcess = tProcesses[nCurrentProcess]
+        tOldProcess.window.setVisible(false)
+    end
+    nCurrentProcess = nil
+end
+
+local function setProcessTitle(n, sTitle)
+    tProcesses[n].sTitle = sTitle
+end
+
+local function resumeProcess(nProcess, sEvent, ...)
+    local tProcess = tProcesses[nProcess]
+    local sFilter = tProcess.sFilter
+    if sFilter == nil or sFilter == sEvent or sEvent == "terminate" then
+        local nPreviousProcess = nRunningProcess
+        nRunningProcess = nProcess
+        term.redirect(tProcess.terminal)
+        local ok, result = coroutine.resume(tProcess.co, sEvent, ...)
+        tProcess.terminal = term.current()
+        if ok then
+            tProcess.sFilter = result
+        else
+            printError(result)
+        end
+        nRunningProcess = nPreviousProcess
+    end
+end
+
+local function launchProcess(tProgramEnv, sProgramPath, ...)
+    local tProgramArgs = {...}
+    local nProcess = #tProcesses + 1
+    local tProcess = {}
+    tProcess.sTitle = fs.getName(sProgramPath)
+    if bShowMenu then
+        tProcess.window = window.create(parentTerm, 1, 2, w, h-2, false)
+    else
+        tProcess.window = window.create(parentTerm, 1, 2, w, h-1, false)
+    end
+    tProcess.co = coroutine.create(function()
+        os.run(tProgramEnv, sProgramPath, table.unpack(tProgramArgs))
+        if not tProcess.bInteracted then
+            term.setCursorBlink(false)
+            print("Press any key to continue")
+            os.pullEvent("char")
+        end
+    end)
+    tProcess.sFilter = nil
+    tProcess.terminal = tProcess.window
+    tProcess.bInteracted = false
+    tProcesses[nProcess] = tProcess
+    resumeProcess(nProcess)
+    return nProcess
+end
+
+local function cullProcess(nProcess)
+    local tProcess = tProcesses[nProcess]
+    if coroutine.status(tProcess.co) == "dead" then
+        if nCurrentProcess == nProcess then
+            selectProcess(nil)
+        end
+        table.remove(tProcesses, nProcess)
+        if nCurrentProcess == nil then
+            if nProcess > 1 then
+                selectProcess(nProcess - 1)
+            elseif #tProcesses > 0 then
+                selectProcess(1)
+            end
+        end
+        return true
+    end
+    return false
+end
+
+local function cullProcesses()
+    local culled = false
+    for n=#tProcesses,1,-1 do
+        culled = culled or cullProcess(n)
+    end
+    return culled
+end
+
+-- Setup the main menu
+local menuMainTextColor, menuMainBgColor, menuOtherTextColor, menuOtherBgColor
+local titleTextColor, titleBgColor, titleCloseTextColor, titleCloseBgColor
+local startButtonTextColor, startButtonBgColor, startMenuTextColor, startMenuBgColor
+if parentTerm.isColor() then
+    menuMainTextColor, menuMainBgColor = colors.white, colors.lightBlue
+    menuOtherTextColor, menuOtherBgColor = colors.white, colors.blue
+    titleTextColor, titleBgColor = colors.white, colors.blue
+    titleCloseTextColor, titleCloseBgColor = colors.white, colors.red
+    startButtonTextColor, startButtonBgColor = colors.white, colors.green
+    startMenuTextColor, startMenuBgColor = colors.black, colors.white
+else
+    menuMainTextColor, menuMainBgColor = colors.white, colors.black
+    menuOtherTextColor, menuOtherBgColor = colors.black, colors.gray
+    titleTextColor, titleBgColor = colors.black, colors.white
+    titleCloseTextColor, titleCloseBgColor = colors.white, colors.black
+    startButtonTextColor, startButtonBgColor = colors.black, colors.white
+    startMenuTextColor, startMenuBgColor = colors.black, colors.white
+end
+
+fs.makeDir("MineOS/Texture/Desktop/"..currentUserName)
+if not fs.exists("MineOS/Texture/Desktop/"..currentUserName.."/1") then
+    shell.run("pastebin get 9EvMFZbV MineOS/Texture/Desktop/"..currentUserName.."/1")
+end
+
+local bgimage = paintutils.loadImage("/MineOS/Texture/Desktop/"..currentUserName.."/1")
+
+local function redrawMenu()
+    if bShowMenu then
+        -- Draw menu
+        parentTerm.setCursorPos(1, h)
+        parentTerm.setBackgroundColor(menuOtherBgColor)
+        parentTerm.clearLine()
+        parentTerm.setTextColor(startButtonTextColor)
+        parentTerm.setBackgroundColor(startButtonBgColor)
+        parentTerm.write(" Start ")
+        parentTerm.setTextColor(menuOtherTextColor)
+        parentTerm.setBackgroundColor(menuOtherBgColor)
+        parentTerm.write("   ")
+        for n=1,#tProcesses do
+            if n == nCurrentProcess then
+                parentTerm.setTextColor(menuMainTextColor)
+                parentTerm.setBackgroundColor(menuMainBgColor)
+            else
+                parentTerm.setTextColor(menuOtherTextColor)
+                parentTerm.setBackgroundColor(menuOtherBgColor)
+            end
+            
+            local title = tProcesses[n].sTitle
+            local titleLen = #title
+            if titleLen >= 8 and titleLen <= 10 then
+                parentTerm.write(title)
+                for i = 1, 10 - titleLen do
+                    parentTerm.write(" ")
+                end
+            elseif titleLen < 10 then
+                parentTerm.write(" " .. title)
+                for i = 1, 9 - titleLen do
+                    parentTerm.write(" ")
+                end
+            else
+                parentTerm.write(string.sub(title, 1, 8) .. "..")
+            end
+        end
+        
+        -- Draw titlebar
+        parentTerm.setCursorPos(1, 1)
+        parentTerm.setBackgroundColor(titleBgColor)
+        parentTerm.setTextColor(titleTextColor)
+        parentTerm.clearLine()
+        for n=1,#tProcesses do
+            if n == nCurrentProcess then
+                parentTerm.write(" " .. tProcesses[n].sTitle)
+            end
+        end
+        parentTerm.setCursorPos(w - 3, 1)
+        parentTerm.setBackgroundColor(titleBgColor)
+        parentTerm.setTextColor(titleTextColor)
+        parentTerm.write("- ")
+        parentTerm.setCursorPos(w - 1, 1)
+        parentTerm.setBackgroundColor(titleCloseBgColor)
+        parentTerm.setTextColor(titleCloseTextColor)
+        parentTerm.write(" X")
+
+        -- Put the cursor back where it should be
+        local tProcess = tProcesses[nCurrentProcess]
+        if tProcess then
+            tProcess.window.restoreCursor()
+        end
+    end
+end
+
+local function drawClock()
+    local time = os.time()
+    local ftime = textutils.formatTime(time, true)
+    parentTerm.setCursorPos(w-4, h)
+    parentTerm.setTextColor(menuOtherTextColor)
+    parentTerm.setBackgroundColor(menuOtherBgColor)
+    if #ftime < 5 then
+        parentTerm.write("0")
+    end
+    parentTerm.write(ftime)
+    
+    local tProcess = tProcesses[nCurrentProcess]
+    if tProcess then
+        tProcess.window.restoreCursor()
+    end
+end
+
+local function resizeWindows()
+    local windowY, windowHeight
+    if bShowMenu then
+        windowY = 2
+        windowHeight = h-2
+    else
+        windowY = 2
+        windowHeight = h-1
+    end
+    for n=1,#tProcesses do
+        local tProcess = tProcesses[n]
+        local window = tProcess.window
+        local x,y = tProcess.window.getCursorPos()
+        if y > windowHeight then
+            tProcess.window.scroll(y - windowHeight)
+            tProcess.window.setCursorPos(x, windowHeight)
+        end
+        tProcess.window.reposition(1, windowY, w, windowHeight)
+    end
+    bWindowsResized = true
+end
+
+local function setMenuVisible(bVis)
+    if bShowMenu ~= bVis then
+        bShowMenu = bVis
+        resizeWindows()
+        redrawMenu()
+    end
+end
+
+local function drawImage(term, tImage, xPos, yPos, width, height)
+    if type(tImage) ~= "table" or type(xPos) ~= "number" or type(yPos) ~= "number" or type(width) ~= "number" or type(height) ~= "number" then
+        error("Expected image, x, y, width, height", 2)
+    end
+    if height > #tImage then
+        height = #tImage
+    end
+    for y=1,height do
+        local tLine = tImage[y]
+        if width > #tLine then
+            width = #tLine
+        end
+        for x=1,width do
+            if tLine[x] > 0 then
+                term.setBackgroundColor(tLine[x])
+                term.setCursorPos(x + xPos - 1, y + yPos - 1)
+                term.write(" ")
+            end
+        end
+    end
+end
+
+local function drawStartMenu()
+    local ofs = h - #tStartMenu - 1
+    parentTerm.setBackgroundColor(titleBgColor)
+    parentTerm.setTextColor(titleTextColor)
+    parentTerm.setCursorPos(1, ofs)
+    if #currentUserName >= 10 then
+        parentTerm.write(" "..string.sub(currentUserName, 1, 10)..".. ")
+    else
+        parentTerm.write(" "..currentUserName)
+        for i = 1, 13 - #currentUserName do
+            parentTerm.write(" ")
+        end
+    end
+    parentTerm.setBackgroundColor(startMenuBgColor)
+    parentTerm.setTextColor(startMenuTextColor)
+    for i = 1, #tStartMenu do
+        parentTerm.setCursorPos(1, ofs + i)
+        parentTerm.write(tStartMenu[i][1])
+        for i = 1, 14 - #tStartMenu[i][1] do
+            parentTerm.write(" ")
+        end
+    end
+end
+
+local function doStartMenuClick(button, x, y)
+    local ofs = h - #tStartMenu - 1
+    if x >= 1 and x <= 7 and y == h and not bStartMenuOpen then
+        bStartMenuOpen = true
+        return true
+    elseif not (y == ofs and x <= 14) and bStartMenuOpen then
+        bStartMenuOpen = false
+        for i = 1, #tStartMenu do
+            if y == ofs + i and x <= 14 then
+                if tStartMenu[i][2] == nil or #tStartMenu[i][2] == 0 then
+                    bStartMenuOpen = true
+                else
+                    parentTerm.setBackgroundColor(startMenuTextColor)
+                    parentTerm.setTextColor(startMenuBgColor)
+                    parentTerm.setCursorPos(1, ofs + i)
+                    parentTerm.write(tStartMenu[i][1])
+                    for i = 1, 14 - #tStartMenu[i][1] do
+                        parentTerm.write(" ")
+                    end
+                    os.sleep(0.25)
+                    if tStartMenu[i][3] == true then
+                        local oldTerm = term.current()
+                        term.redirect(parentTerm)
+                        os.run(envVars, table.unpack(tStartMenu[i][2]))
+                        term.redirect(oldTerm)
+                    else
+                        local nTask = envVars["multishell"].launch(envVars, table.unpack(tStartMenu[i][2]))
+                        if nTask then
+                            envVars["multishell"].setFocus(nTask)
+                        end
+                    end
+                    timer = os.startTimer(nInterval)
+                end
+            end
+        end
+        return true
+    end
+    return false
+end
+
+local multishell = {}
+
+function multishell.getFocus()
+    return nCurrentProcess
+end
+
+function multishell.setFocus(n)
+    if n >= 1 and n <= #tProcesses then
+        selectProcess(n)
+        redrawMenu()
+        return true
+    end
+    return false
+end
+
+function multishell.getTitle(n)
+    if n >= 1 and n <= #tProcesses then
+        return tProcesses[n].sTitle
+    end
+    return nil
+end
+
+function multishell.setTitle(n, sTitle)
+    if n >= 1 and n <= #tProcesses then
+        setProcessTitle(n, sTitle)
+        redrawMenu()
+    end
+end
+
+function multishell.getCurrent()
+    return nRunningProcess
+end
+
+function multishell.launch(tProgramEnv, sProgramPath, ...)
+    local previousTerm = term.current()
+    --setMenuVisible((#tProcesses + 1) >= 2)
+    local nResult = launchProcess(tProgramEnv, sProgramPath, ...)
+    redrawMenu()
+    term.redirect(previousTerm)
+    return nResult
+end
+
+function multishell.getCount()
+    return #tProcesses
+end
+
+local function tokenise(...)
+    local sLine = table.concat({...}, " ")
+	local tWords = {}
+    local bQuoted = false
+    for match in string.gmatch(sLine .. "\"", "(.-)\"") do
+        if bQuoted then
+            table.insert(tWords, match)
+        else
+            for m in string.gmatch(match, "[^ \t]+") do
+                table.insert(tWords, m)
+            end
+        end
+        bQuoted = not bQuoted
+    end
+    return tWords
+end
+
+function shell.openTab(...)
+    local tWords = tokenise(...)
+    local sCommand = tWords[1]
+    if sCommand then
+        local sPath = shell.resolveProgram(sCommand)
+        if sPath == "rom/programs/shell" then
+            return multishell.launch(tEnv, sPath, table.unpack(tWords, 2))
+        elseif sPath ~= nil then
+            return multishell.launch(tEnv, "rom/programs/shell", sCommand, table.unpack(tWords, 2))
+        else
+            printError("No such program")
+        end
+    end
+end
+
+function shell.switchTab(nID)
+    multishell.setFocus(nID)
+end
+
+-- Begin
+
+envVars = {
+    ["shell"] = shell,
+    ["multishell"] = multishell,
+    ["currentUserName"] = currentUserName
+}
+
+parentTerm.clear()
+--setMenuVisible(false)
+setMenuVisible(true)
+--selectProcess(launchProcess(envVars, "/rom/programs/shell"))
+redrawMenu()
+
+timer = os.startTimer(0)
+
+-- Run processes
+while bIsRunning do
+    if #tProcesses > 0 then
+        -- Get the event
+        local tEventData = {os.pullEventRaw()}
+        local sEvent = tEventData[1]
+        
+        if sEvent == "timer" and tEventData[2] == timer then
+            timer = os.startTimer(nInterval)
+        
+        elseif sEvent == "term_resize" then
+            -- Resize event
+            w,h = parentTerm.getSize()
+            resizeWindows()
+            redrawMenu()
+
+        elseif (sEvent == "char" or sEvent == "key" or sEvent == "key_up" or sEvent == "paste" or sEvent == "terminate") and nCurrentProcess ~= nil then
+            -- Keyboard event
+            -- Passthrough to current process
+            resumeProcess(nCurrentProcess, table.unpack(tEventData))
+            if cullProcess(nCurrentProcess) then
+                --setMenuVisible(#tProcesses >= 2)
+                redrawMenu()
+            end
+
+        elseif sEvent == "mouse_click" then
+            -- Click event
+            local button, x, y = tEventData[2], tEventData[3], tEventData[4]
+            local oldStartMenuState = bStartMenuSelected
+            local doMenuUpdate = doStartMenuClick(button, x, y)
+            if not doMenuUpdate then
+                if bShowMenu and y == h then
+                    -- Switch process
+                    local tabStart = 11
+                    for n=1,#tProcesses do
+                        tabEnd = tabStart + 10
+                        if x >= tabStart and x < tabEnd then
+                            selectProcess(n)
+                            redrawMenu()
+                            break
+                        end
+                        tabStart = tabEnd
+                    end
+                elseif y == 1 then
+                    if (x == w - 1 or x == w) and nCurrentProcess ~= nil then
+                        resumeProcess(nCurrentProcess, "terminate")
+                        if cullProcess(nCurrentProcess) then
+                            --setMenuVisible(#tProcesses >= 2)
+                            redrawMenu()
+                        end
+                        timer = os.startTimer(nInterval)
+                    elseif (x == w - 3 or x == w - 2) and nCurrentProcess ~= nil then
+                        --nCurrentProcess = nil
+                        deselectProcess(nCurrentProcess)
+                        redrawMenu()
+                    end
+                elseif nCurrentProcess ~= nil and not (bStartMenuOpen and y >= h - #tStartMenu - 1 and x <= 14) then
+                    -- Passthrough to current process
+                    resumeProcess(nCurrentProcess, sEvent, button, x, (bShowMenu and y - 1) or y)
+                    if cullProcess(nCurrentProcess) then
+                        --setMenuVisible(#tProcesses >= 2)
+                        redrawMenu()
+                    end
+                end
+            else
+                if nCurrentProcess ~= nil then
+                    selectProcess(nCurrentProcess)
+                    redrawMenu()
+                end
+            end
+
+        elseif sEvent == "mouse_drag" or sEvent == "mouse_up" or sEvent == "mouse_scroll" then
+            -- Other mouse event
+            local p1, x, y = tEventData[2], tEventData[3], tEventData[4]
+            if not ((bShowMenu and y == h) or y == 1) and nCurrentProcess ~= nil then
+                -- Passthrough to current process
+                resumeProcess(nCurrentProcess, sEvent, p1, x, (bShowMenu and y - 1) or y)
+                if cullProcess(nCurrentProcess) then
+                    --setMenuVisible(#tProcesses >= 2)
+                    redrawMenu()
+                end
+            end
+
+        else
+            -- Other event
+            -- Passthrough to all processes
+            local nLimit = #tProcesses -- Storing this ensures any new things spawned don't get the event
+            for n=1,nLimit do
+                resumeProcess(n, table.unpack(tEventData))
+            end
+            if cullProcesses() then
+                --setMenuVisible(#tProcesses >= 2)
+                redrawMenu()
+            end
+        end
+
+        if bWindowsResized then
+            -- Pass term_resize to all processes
+            local nLimit = #tProcesses -- Storing this ensures any new things spawned don't get the event
+            for n=1,nLimit do
+                resumeProcess(n, "term_resize")
+            end
+            bWindowsResized = false
+            if cullProcesses() then
+                --setMenuVisible(#tProcesses >= 2)
+                redrawMenu()
+            end
+        end
+    else
+        -- Get the event
+        local tEventData = {os.pullEventRaw()}
+        local sEvent = tEventData[1]
+        local doSkipRedraw = false
+        
+        if sEvent == "term_resize" then
+            -- Resize event
+            w,h = parentTerm.getSize()
+
+        elseif sEvent == "mouse_click" then
+            -- Click event
+            local button, x, y = tEventData[2], tEventData[3], tEventData[4]
+            doSkipRedraw = doSkipRedraw or doStartMenuClick(button, x, y)
+        end
+    end
+    
+    if nCurrentProcess == nil and not bStartMenuOpen then
+        parentTerm.setCursorBlink(false)
+        drawImage(parentTerm, bgimage, 1, 1, w, h - 1)
+        timer = os.startTimer(nInterval)
+    end
+    if bStartMenuOpen then
+        drawStartMenu()
+    end
+    drawClock()
+end
+
+-- Shutdown
+term.redirect(parentTerm)
+
+end
+
+os.loadAPI("/MineOS/API/BSOD")
+BSOD.doErrorTrap(main)

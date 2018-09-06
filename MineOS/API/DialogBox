@@ -1,0 +1,156 @@
+local function printC(posX,posY,textCol,backCol,text)
+	term.setCursorPos(posX,posY)
+	term.setTextColor(colors[textCol] or textCol)
+	term.setBackgroundColor(colors[backCol] or backCol)
+	term.write(text)
+end
+
+local dialogTitle = {txt = colors.white,back = colors.blue}
+local dialogWindow = {txt = colors.black,back = colors.white}
+local dialogInput = {txt = colors.black,back = colors.lightGray}
+
+function inputBox(title)
+	local boxW,boxH = 26,3
+	local termX,termY = term.getSize()
+	local ofsX,ofsY = math.ceil((termX/2) - (boxW/2)) , math.ceil((termY/2) - (boxH/2)) -- offset from top left
+	local options = {"ok","cancel"}
+	
+	local selected = 1
+	local space = 0
+	local range = {}
+	for i = 1,#options do
+		range[i] = {s = space,f = space + string.len(options[i])}
+		space = space + string.len(options[i])+3
+	end
+	local ofC = (boxW/2) - (space/2)
+	
+	local function drawBox()
+		printC(ofsX,ofsY,dialogTitle.txt,dialogTitle.back,string.rep(" ",boxW))
+		printC(ofsX+1,ofsY,dialogTitle.txt,dialogTitle.back,(title or "User Input"))
+		printC(ofsX,ofsY+1,dialogWindow.txt,dialogWindow.back,string.rep(" ",boxW))
+		printC(ofsX,ofsY+2,dialogWindow.txt,dialogWindow.back,string.rep(" ",boxW))
+		printC(ofsX,ofsY+3,dialogWindow.txt,dialogWindow.back,string.rep(" ",boxW))
+		
+		for i = 1,#options do
+			if i == selected then
+				term.setBackgroundColor(dialogInput.back)
+				term.setCursorPos(range[i].s + ofC + ofsX - 1,ofsY + 3)
+				term.write("["..options[i].."]")
+				term.setBackgroundColor(dialogWindow.back)
+				term.write(" ")
+			else
+				term.setCursorPos(range[i].s + ofC + ofsX - 1,ofsY + 3)
+				term.write(" "..options[i].." ")
+			end
+		end
+		
+		printC(ofsX+2,ofsY+2,dialogInput.txt,dialogInput.back,string.rep(" ",boxW-4))
+	end
+	drawBox()
+	term.setCursorPos(ofsX+2,ofsY+2)
+	local co = coroutine.create(function() return readMOD(nil,nil,boxW - 4) end)
+	while true do
+		local event = {os.pullEvent()}
+		if event[1] == "key" or event[1] == "char" then
+			if event[2] == 28 then
+				local test,data = coroutine.resume(co,"return")
+				return data
+			else
+				coroutine.resume(co,unpack(event))
+			end
+		elseif event[1] == "mouse_click" then
+			if event[4] == ofsY + 3 then
+				for i = 1,#options do
+					if event[3] >= range[i].s + ofC + ofsX - 1 and event[3] <= range[i].f + ofC + ofsX then
+						if options[i] == "ok" then
+							local test,data = coroutine.resume(co,"return")
+							return data
+						elseif options[i] == "cancel" then
+							return false
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+function dialogBox(title, message, options, w, h)
+    local bugTest = false
+
+	term.setCursorBlink(false)
+	local selected = 1
+	title = title or ""
+	message = message or ""
+	options = options or {}
+	local boxW,boxH = (w or 26), (h or 3)
+	local termX,termY = term.getSize()
+	local ofsX,ofsY = math.ceil((termX/2) - (boxW/2)) , math.ceil((termY/2) - (boxH/2)) -- offset from top left
+	
+	local space = 0
+	local range = {}
+	for i = 1,#options do
+		range[i] = {s = space,f = space + string.len(options[i])}
+		space = space + string.len(options[i])+3
+	end
+	local ofC = math.ceil((boxW/2)) - math.ceil((space/2))
+	
+	local function drawBox()
+		printC(ofsX,ofsY,dialogTitle.txt,dialogTitle.back," "..title..string.rep(" ",boxW-#title-2))
+		term.setBackgroundColor(colors.red)
+		term.setTextColor(colors.white)
+		term.write("X")
+		printC(ofsX,ofsY+1,dialogWindow.txt,dialogWindow.back,string.sub(" "..message..string.rep(" ",boxW),1,boxW))
+		term.setCursorPos(ofsX,ofsY+2)
+		term.write(string.rep(" ",boxW))
+		term.setCursorPos(ofsX,ofsY+3)
+		term.write(string.rep(" ",boxW))
+		for i = 1,#options do
+			if i == selected then
+				printC(range[i].s + ofC + ofsX - 1,ofsY + 3,"black","lightGray","["..options[i].."]")
+				term.setBackgroundColor(dialogWindow.back)
+				term.setTextColor(dialogWindow.txt)
+				term.write(" ")
+			else
+				term.setCursorPos(range[i].s + ofC + ofsX - 1,ofsY + 3)
+				term.write(" "..options[i].." ")
+			end
+		end
+		term.setCursorPos(ofsX + ofC + space,ofsY + 3)
+		term.write(string.rep(" ",boxW - (ofC + space)))
+		term.setBackgroundColor(colors.black)
+		term.setTextColor(colors.white)			
+	end
+	while true do
+		drawBox()
+		event = {os.pullEvent()}
+		if event[1] == "key" then
+			if event[2] == 203 then -- left
+				selected = selected - 1
+				if selected < 1 then
+					selected = #options
+				end
+			elseif event[2] == 205 then -- right
+				selected = selected + 1
+				if selected > #options then
+					selected = 1
+				end
+			elseif event[2] == 28 then -- enter
+				return selected , options[selected]
+			end
+		elseif event[1] == "mouse_click" then
+			
+			if bugTest then term.write("M "..event[2].." X "..event[3].." Y "..event[4].."    ") end
+			
+			if event[2] == 1 then
+				if event[4] == ofsY + 3 then
+					for i = 1,#options do
+						if event[3] >= range[i].s + ofC + ofsX - 1 and event[3] <= range[i].f + ofC + ofsX then
+							return i, options[i]
+						end
+					end
+				end
+			end
+		end
+	end
+end

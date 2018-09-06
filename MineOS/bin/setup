@@ -1,0 +1,38 @@
+function setup()
+    term.setBackgroundColor(8)
+    term.clear(); term.setCursorPos(1, 1)
+    term.setTextColor(1)
+    for shutdown1=0,2 do
+        term.setBackgroundColor(8)
+        term.setCursorPos(20,9)
+        write([[| Welcome!]])
+        term.setBackgroundColor(8)
+        sleep(0.1)
+        term.setCursorPos(20,9)
+        write([[/ Welcome!]])
+        term.setBackgroundColor(8)
+        sleep(0.1)
+        term.setCursorPos(20,9)
+        write([[- Welcome!]])
+        term.setBackgroundColor(8)
+        sleep(0.1)
+        term.setCursorPos(20,9)
+        write([[\ Welcome!]])
+        term.setBackgroundColor(8)
+        sleep(0.1)
+    end
+    term.setBackgroundColor(128)
+    term.clear(); term.setCursorPos(1, 1)
+    sleep(0.1)
+    term.setBackgroundColor(256)
+    term.clear(); term.setCursorPos(1, 1)
+    sleep(0.1)
+    term.setBackgroundColor(1)
+    term.clear(); term.setCursorPos(1, 1)
+    sleep(0.1)
+    os.run({
+        ["shell"] = shell,
+        ["currentUserName"] = currentUserName
+    }, "MineOS/bin/desktop")
+end
+setup()
