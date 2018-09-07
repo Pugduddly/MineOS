@@ -13,7 +13,7 @@ To install, simply type in `pastebin run Lqw3BPyP` and press Enter.
 ## Screenshots
 ![MineOS startup menu](https://raw.githubusercontent.com/Pugduddly/MineOS/master/Screenshot1.png)
 
-MineOS startup menu
+MineOS startup menu (can be accessed by pressing any key while logo is displayed)
 
 ---
 
