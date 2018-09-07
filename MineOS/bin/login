@@ -1,0 +1,376 @@
+os.loadAPI("/MineOS/API/BSOD")
+os.loadAPI("/MineOS/API/DialogBox")
+
+function runDesktop1(currentUserName)
+    os.run({
+        ["shell"] = shell,
+        ["currentUserName"] = currentUserName
+    }, "MineOS/bin/setup")
+end
+
+local accounts = {{}, {}, {}}
+local tempFile
+local Bootscreen
+
+fs.makeDir("MineOS/Profile")
+if not fs.exists("MineOS/Profile/User1") then
+    createAcc1 = fs.open("MineOS/Profile/User1", "w")
+    createAcc1.write("Guest\n")
+    createAcc1.write("no password")
+    createAcc1.close()
+end
+if not fs.exists("MineOS/Profile/User2") then
+    createAcc2 = fs.open("MineOS/Profile/User2", "w")
+    createAcc2.write("Free slot\n")
+    createAcc2.write("no password")
+    createAcc2.close()
+end
+if not fs.exists("MineOS/Profile/User3") then
+    createAcc3 = fs.open("MineOS/Profile/User3", "w")
+    createAcc3.write("Free slot\n")
+    createAcc3.write("no password")
+    createAcc3.close()
+end
+
+logincheck = fs.open("MineOS/Profile/User1", "r")
+if logincheck then
+    accounts[1] = {logincheck.readLine(), logincheck.readLine()}
+end
+logincheck.close()
+logincheck = fs.open("MineOS/Profile/User2", "r")
+if logincheck then
+    accounts[2] = {logincheck.readLine(), logincheck.readLine()}
+end
+logincheck.close()
+logincheck = fs.open("MineOS/Profile/User3", "r")
+if logincheck then
+    accounts[3] = {logincheck.readLine(), logincheck.readLine()}
+end
+logincheck.close()
+
+local noPasswordSHA = SHA.sha256("no password")
+
+local image = paintutils.loadImage("MineOS/Texture/Login")
+
+function MineOSUpdateLogin1()
+    function loadscreen1()
+        paintutils.drawImage(image, 1, 1)
+        -- ## Test Update ## --
+        term.setBackgroundColor(32768)
+        term.setCursorPos(30,1)
+        term.setTextColor(1)
+        term.setBackgroundColor(2048)
+        term.setTextColor(16)
+        write([[:]])
+        term.setCursorPos(30,2)
+        print([[:]])
+        term.setCursorPos(31,1)
+        shell.run("MineOS/Config/MineOSUpdate")
+        term.setBackgroundColor(2048)
+        term.setTextColor(1)
+        term.setCursorPos(1,1)
+        write([[MineOS]])
+        term.setCursorPos(3,9)
+        term.setBackgroundColor(8)
+        write([[Welcome]])
+        for i = 3, 16 do
+            term.setCursorPos(15,i)
+            write([[:]])
+        end
+        term.setBackgroundColor(2048)
+        term.setCursorPos(4,18)
+        write([[Turn off computer]])
+        term.setBackgroundColor(2)
+        term.setCursorPos(2,18)
+        write([[Q]])
+        term.setBackgroundColor(256)
+        term.setCursorPos(17,5)
+        write([[1   ]])
+        term.setCursorPos(17,6)
+        write([[    ]])
+        term.setCursorPos(17,9)
+        write([[2   ]])
+        term.setCursorPos(17,10)
+        write([[    ]])
+        term.setCursorPos(17,13)
+        write([[3   ]])
+        term.setCursorPos(17,14)
+        write([[    ]])
+        term.setBackgroundColor(8)
+        term.setCursorPos(22,5)
+        write([[1]])
+        term.setTextColor(16384)
+        term.setCursorPos(22,6)
+        write([[-#-]])
+        term.setTextColor(1)
+        term.setBackgroundColor(8)
+        term.setCursorPos(22,9)
+        write([[2]])
+        term.setTextColor(16384)
+        term.setCursorPos(22,10)
+        write([[-#-]])
+        term.setTextColor(1)
+        term.setBackgroundColor(8)
+        term.setCursorPos(22,13)
+        write([[3]])
+        term.setTextColor(16384)
+        term.setCursorPos(22,14)
+        write([[-#-]])
+        term.setCursorPos(22,5)
+        term.setTextColor(1)
+        write(accounts[1][1])
+        term.setTextColor(32)
+        if accounts[1][1] == "Free slot" then
+            term.setTextColor(16)
+            term.setCursorPos(22,6)
+            write([[Unavailable!        ]])
+        elseif accounts[1][2] == "no password" or accounts[1][2] == noPasswordSHA then
+            term.setCursorPos(22,6)
+            write([[No password]])
+        else
+            term.setCursorPos(22,6)
+            term.setTextColor(16384)
+            write([[Password     ]])
+        end
+        term.setCursorPos(22,9)
+        term.setTextColor(1)
+        write(accounts[2][1])
+        term.setTextColor(32)
+        if accounts[2][1] == "Free slot" then
+            term.setTextColor(16)
+            term.setCursorPos(22,10)
+            write([[Unavailable!        ]])
+        elseif accounts[2][2] == "no password" or accounts[2][2] == SHA.sha256("no password") then
+            term.setCursorPos(22,10)
+            write([[No password]])
+        else
+            term.setCursorPos(22,10)
+            term.setTextColor(16384)
+            write([[Password     ]])
+        end
+        term.setCursorPos(22,13)
+        term.setTextColor(1)
+        write(accounts[3][1])
+        term.setTextColor(32)
+        if accounts[3][1] == "Free slot" then
+            term.setTextColor(16)
+            term.setCursorPos(22,14)
+            write([[Unavailable!        ]])
+        elseif accounts[3][2] == "no password" or accounts[3][2] == SHA.sha256("no password") then
+            term.setCursorPos(22,14)
+            write([[No password]])
+        else
+            term.setTextColor(16384)
+            term.setCursorPos(22,14)
+            write([[Password     ]])
+        end
+    end
+    loadscreen1()
+    function click()
+        for clicks=0,2 do
+            event, button, X2, Y2 = os.pullEventRaw("mouse_click")
+            XY2 = X2..","..Y2
+            if XY2 == "33,6" then
+                breakloop1()
+                parallel.waitForAny(terminate, MineOSUpdateLogin1)
+            end
+            if XY2 == "28,9" then
+                breakloop1()
+                parallel.waitForAny(terminate, MineOSUpdateLogin1)
+            end
+            if XY2 == "21,9" then
+                breakloop1()
+                loadscreen1()
+                sleep(1)
+                term.setBackgroundColor(2048)
+                term.setCursorPos(1,1)
+                write([[                                                   ]])
+                term.setCursorPos(1,2)
+                sleep(0,1)
+                write([[                                                   ]])
+                term.setCursorPos(2,18)
+                sleep(0,1)
+                write([[                                                   ]])
+                shell.run("/MineOS/bin/shutdown")
+            end
+        end
+        while true do
+            event, button, X, Y = os.pullEventRaw("mouse_drag")
+            XY = X..","..Y
+            event, button, X2, Y2 = os.pullEventRaw("mouse_click")
+            XY2 = X2..","..Y2
+            if XY2 == (X + 8) .. "," .. Y then
+                breakloop1()
+                parallel.waitForAny(terminate, MineOSUpdateLogin1)
+                break
+            end
+            if XY2 == (X + 3) .. "," .. (Y + 3) then
+                breakloop1()
+                parallel.waitForAny(terminate, MineOSUpdateLogin1)
+                break
+            end
+            if XY2 == (X - 4) .. "," .. (Y + 3) then
+                breakloop1()
+                loadscreen1()
+                sleep(1)
+                term.setBackgroundColor(2048)
+                term.setCursorPos(1,1)
+                write([[                                                   ]])
+                term.setCursorPos(1,2)
+                sleep(0,1)
+                write([[                                                   ]])
+                term.setCursorPos(2,18)
+                sleep(0,1)
+                write([[                                                   ]])
+                shell.run("/MineOS/bin/shutdown")
+            end
+        end
+    end
+    while true do
+        function loopbreak2a()
+            loopbreak2 = 1
+        end
+        event, button, X, Y = os.pullEventRaw("mouse_click")
+        XY = X..","..Y
+        if XY == "2,18" and button == 1 then
+            --term.setCursorPos(4,18)
+            --term.setBackgroundColor(2048)
+            --term.setTextColor(1)
+            --write("You can move the window!")
+            --parallel.waitForAny(click, drag)
+            local i, res = DialogBox.dialogBox("Info", "Shutdown?", {"Yes", "No"})
+            if res == "Yes" then
+                loadscreen1()
+                sleep(1)
+                term.setBackgroundColor(2048)
+                term.setCursorPos(1,1)
+                write([[                                                   ]])
+                term.setCursorPos(1,2)
+                sleep(0,1)
+                write([[                                                   ]])
+                term.setCursorPos(2,18)
+                sleep(0,1)
+                write([[                                                   ]])
+                shell.run("/MineOS/bin/shutdown")
+            else
+                loadscreen1()
+            end
+        end
+        if X >= 17 and X <= 40 and Y == 5 or X >= 17 and X <= 40 and Y == 6 then
+            term.setTextColor(16)
+            term.setCursorPos(40,6)
+            write([[ <         ]])
+            login2 = fs.open("MineOS/Profile/User1", "r")
+            if login2 then
+                accounts[1][1] = login2.readLine()
+                accounts[1][2] = login2.readLine()
+            end
+            login2.close()
+            if accounts[1][1] == "Free slot" then
+                parallel.waitForAny(terminate, MineOSUpdateLogin1)
+            end
+            if accounts[1][2] == "no password" then
+                loopbreak2a()
+                runDesktop1(accounts[1][1])
+            else
+                term.setBackgroundColor(1)
+                term.setTextColor(32768)
+                term.setCursorPos(22,6)
+                textutils.slowWrite([[                  ]])
+                term.setCursorPos(22,6)
+                passwordcheck1 = read("*")
+                if passwordcheck1 == accounts[1][2] then
+                    loopbreak2a()
+                    runDesktop1(accounts[1][1])
+                else
+                    term.setTextColor(16384)
+                    term.setBackgroundColor(8)
+                    term.setCursorPos(22,6)
+                    textutils.slowWrite([[Wrong password!                ]])
+                    sleep(1)
+                    term.setCursorPos(22,6)
+                    write([[Password            ]])
+                end
+            end
+        end
+        if X >= 17 and X <= 40 and Y == 9 or X >= 17 and X <= 40 and Y == 10 then
+            term.setTextColor(16)
+            term.setCursorPos(40,10)
+            write([[ <         ]])
+            login3 = fs.open("MineOS/Profile/User2", "r")
+            if login3 then
+                accounts[2][1] = login3.readLine()
+                accounts[2][2] = login3.readLine()
+            end
+            login3.close()
+            if accounts[2][1] == "Free slot" then
+                parallel.waitForAny(terminate, MineOSUpdateLogin1)
+            end
+            if accounts[2][2] == "no password" then
+                loopbreak2a()
+                runDesktop1(accounts[2][1])
+            else
+                term.setBackgroundColor(1)
+                term.setTextColor(32768)
+                term.setCursorPos(22,10)
+                textutils.slowWrite([[                  ]])
+                term.setCursorPos(22,10)
+                passwordcheck1 = read("*")
+                if passwordcheck1 == accounts[2][2] then
+                    loopbreak2a()
+                    runDesktop1(accounts[2][1])
+                else
+                    term.setTextColor(16384)
+                    term.setBackgroundColor(8)
+                    term.setCursorPos(22,10)
+                    textutils.slowWrite([[Wrong password!                ]])
+                    sleep(1)
+                    term.setCursorPos(22,10)
+                    write([[Password            ]])
+                end
+            end
+        end
+        if X >= 17 and X <= 40 and Y == 13 or X >= 17 and X <= 40 and Y == 14 then
+            term.setTextColor(16)
+            term.setCursorPos(40,14)
+            write([[ <         ]])
+            login4 = fs.open("MineOS/Profile/User3", "r")
+            if login4 then
+                accounts[3][1] = login4.readLine()
+                accounts[3][2] = login4.readLine()
+            end
+            login4.close()
+            if accounts[3][1] == "Free slot" then
+                parallel.waitForAny(terminate, MineOSUpdateLogin1)
+            end
+            if accounts[3][2] == "no password" then
+                loopbreak2a()
+                runDesktop1(accounts[3][1])
+            else
+                term.setBackgroundColor(1)
+                term.setTextColor(32768)
+                term.setCursorPos(22,14)
+                textutils.slowWrite([[                  ]])
+                term.setCursorPos(22,14)
+                passwordcheck1 = read("*")
+                if passwordcheck1 == accounts[3][2] then
+                    loopbreak2a()
+                    runDesktop1(accounts[3][1])
+                else
+                    term.setTextColor(16384)
+                    term.setBackgroundColor(8)
+                    term.setCursorPos(22,14)
+                    textutils.slowWrite([[Wrong password!                ]])
+                    sleep(1)
+                    term.setCursorPos(22,14)
+                    write([[Password            ]])
+                end
+            end
+        end
+        if loopbreak2 == 1 then
+            break
+        end
+    end
+end
+
+BSOD.doErrorTrap(MineOSUpdateLogin1)

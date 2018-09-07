@@ -100,15 +100,15 @@ function SystemSettings()
         sbc(256)
         write("OFF")
 
-        saveSK = fs.open("MineOS/Config/SaveStart", "r")
-        SaveStart = saveSK.readLine()
-        saveSK.close()
+        bootscreenSK = fs.open("MineOS/Config/Bootscreen", "r")
+        Bootscreen = bootscreenSK.readLine()
+        bootscreenSK.close()
 
-        if SaveStart == "false" then
+        if Bootscreen == "true" then
             scp(16,4)
             sbc(16384)
             write("ON ")
-        elseif SaveStart == "trueKeep" then
+        elseif Bootscreen == "false" then
             scp(20,4)
             sbc(16384)
             write("OFF")
@@ -953,15 +953,15 @@ function SystemMouse()
                 event, button, X, Y = os.pullEvent("mouse_click")
                 Y = Y + 1
                 if X >= 16 and X <= 18 and Y == 4 then
-                    saveSK = fs.open("MineOS/Config/SaveStart", "w")
-                    saveSK.write("false") -- false for no fast start
-                    saveSK.close()
+                    bootscreenSK = fs.open("MineOS/Config/Bootscreen", "w")
+                    bootscreenSK.write("true")
+                    bootscreenSK.close()
                     SystemSettingsReload()
                 end
                 if X >= 20 and X <= 23 and Y == 4 then
-                    saveSK = fs.open("MineOS/Config/SaveStart", "w")
-                    saveSK.write("trueKeep") -- true for fast start
-                    saveSK.close()
+                    bootscreenSK = fs.open("MineOS/Config/Bootscreen", "w")
+                    bootscreenSK.write("false")
+                    bootscreenSK.close()
                     SystemSettingsReload()
                 end
                 --########################################--
