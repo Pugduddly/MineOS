@@ -1,0 +1,12 @@
+os.loadAPI("/MineOS/API/BSOD")
+os.loadAPI("/MineOS/API/DialogBox")
+local function main()
+    local input = DialogBox.inputBox("Run")
+    local nTask = shell.openTab(input)
+    if nTask then
+        shell.switchTab(nTask)
+    else
+        DialogBox.dialogBox("Error", "Can't run program!", {"OK"})
+    end
+end
+BSOD.doErrorTrap(main)

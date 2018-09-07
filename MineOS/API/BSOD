@@ -26,6 +26,6 @@ function doErrorTrap(fCall)
 		term.setCursorPos(12,16)
 		write("Press any key to continue ")
 		response = read("")
-		os.run({["shell"] = shell, ["multishell"] = multishell}, "/MineOS/bin/desktop")
+		--os.run({["shell"] = shell, ["multishell"] = multishell}, "/MineOS/bin/desktop")
 	end
 end

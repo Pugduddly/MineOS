@@ -34,6 +34,8 @@ local tStartMenu = {
     {name = "Firewolf", command = {"/rom/programs/shell", "/MineOS/Programs/Firewolf"}},
     {name = "Settings", command = {"/MineOS/Programs/Settings"}},
     {name = ""},
+    {name = "Run", command = {"/MineOS/bin/run"}, doRunNative = true},
+    {name = ""},
     {name = "Shutdown", command = {"/MineOS/bin/shutdown"}, doRunNative = true},
     {name = "Reboot", command = {"/MineOS/bin/reboot"}, doRunNative = true}
 }
@@ -448,9 +450,9 @@ function shell.openTab(...)
     if sCommand then
         local sPath = shell.resolveProgram(sCommand)
         if sPath == "rom/programs/shell" then
-            return multishell.launch(tEnv, sPath, table.unpack(tWords, 2))
+            return multishell.launch(envVars, sPath, table.unpack(tWords, 2))
         elseif sPath ~= nil then
-            return multishell.launch(tEnv, "rom/programs/shell", sCommand, table.unpack(tWords, 2))
+            return multishell.launch(envVars, "rom/programs/shell", sCommand, table.unpack(tWords, 2))
         else
             printError("No such program")
         end
