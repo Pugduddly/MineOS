@@ -189,10 +189,10 @@ function inputBox(title)
 			if event[4] == ofsY + 3 then
 				for i = 1,#options do
 					if event[3] >= range[i].s + ofC + ofsX - 1 and event[3] <= range[i].f + ofC + ofsX then
-						if options[i] == "ok" then
+						if options[i] == "OK" then
 							local test,data = coroutine.resume(co,"return")
 							return data
-						elseif options[i] == "cancel" then
+						elseif options[i] == "Cancel" then
 							return false
 						end
 					end

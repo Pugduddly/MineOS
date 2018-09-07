@@ -178,6 +178,8 @@ function main()
             end
             sleep(math.random() * 0.25)
         end
+        paintutils.drawFilledBox(1, 1, w, h, colors.black)
+        sleep(0.25)
     end
 
     local function waitForEvent()
