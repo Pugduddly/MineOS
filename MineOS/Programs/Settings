@@ -19,10 +19,6 @@ sbc(32768)
 stc(1)
 os.loadAPI("MineOS/API/SHA")
 os.loadAPI("MineOS/API/BSOD")
---fs.makeDir("MineOS/Task")F
---writetask = fs.open("MineOS/Task/task", "w")
---writetask.write([[]])
---writetask.close()
 -- ########################## -- ABOUT -- ############################ --
 wEdition = "MineOS"
 wDeveloper = "Pugduddly"
@@ -32,7 +28,7 @@ wVersion = wVersionS.readLine()
 wVersionS.close()
 
 -- Show real FreeSpace --
-realFreeSpace = false
+realFreeSpace = true
 MySpace = "800"
 -- Standard files --
 ChangedName1 = "Guest"
@@ -464,12 +460,9 @@ function SystemBackground()
     write(" Pastebin ")
 end
 --############################### Autorun ##################################--
---BSOD.doErrorTrap(SystemClear)
---BSOD.doErrorTrap(setLayout)
---BSOD.doErrorTrap(SystemInfo)
-SystemClear()
-setLayout()
-SystemInfo()
+BSOD.doErrorTrap(SystemClear)
+BSOD.doErrorTrap(setLayout)
+BSOD.doErrorTrap(SystemInfo)
 --############################### Mouse ##################################--
 function SystemMouse()
     while true do

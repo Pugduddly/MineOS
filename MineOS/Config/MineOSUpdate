@@ -1,11 +1,18 @@
-version = fs.open("MineOS/Config/OSversion", "r")
-ONver = version.readAll()
-ONlen = #ONver
+local function getLines(string)
+    local lines = {}
+    for match in string:gmatch("[^\r?\n\r?]+") do
+        lines[#lines + 1] = match
+    end
+    return lines
+end
+
+local version = fs.open("MineOS/Config/OSversion", "r")
+local osVer = getLines(version.readAll())[1]
 version.close()
-response = http.get("https://raw.githubusercontent.com/Pugduddly/MineOS/master/MineOS/Config/OSversion")
+local response = http.get("https://raw.githubusercontent.com/Pugduddly/MineOS/master/MineOS/Config/OSversion")
 if response then
-	OSver = response.readAll()
-	if OSver == ONver then
+	local text = getLines(response.readAll())[1]
+	if osVer == text then
 		write("MineOS is up to date!")
 	else
 		write("Please update MineOS!")
@@ -14,7 +21,6 @@ else
 	write("No connection D:")
 end
 term.setCursorPos(31,2)
---write("Version             ")
 write("Version")
-for i=0, 13-ONlen do write(" ") end
-write(ONver)
+for i=0, 13 - #osVer do write(" ") end
+write(osVer)

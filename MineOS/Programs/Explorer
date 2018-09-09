@@ -108,8 +108,8 @@ local function help()
 --update -u: update]])
 end
 
-local function inBouwndry(clickX,clickY,boxX,boxY,width,hight)
-	return ( clickX >= boxX and clickX < boxX + width and clickY >= boxY and clickY < boxY + hight )
+local function inBoundary(clickX,clickY,boxX,boxY,width,height)
+	return ( clickX >= boxX and clickX < boxX + width and clickY >= boxY and clickY < boxY + height )
 end
 
 local function update()
@@ -434,148 +434,12 @@ local function printC(posX,posY,textCol,backCol,text)
 	term.write(text)
 end
 
-local function InputBox(title)
-	local boxW,boxH = 26,3
-	local termX,termY = term.getSize()
-	local ofsX,ofsY = math.ceil((termX/2) - (boxW/2)) , math.ceil((termY/2) - (boxH/2)) -- offset from top left
-	local options = {"ok","cancel"}
-	
-	local selected = 1
-	local space = 0
-	local range = {}
-	for i = 1,#options do
-		range[i] = {s = space,f = space + string.len(options[i])}
-		space = space + string.len(options[i])+3
-	end
-	local ofC = (boxW/2) - (space/2)
-	
-	local function drawBox()
-		printC(ofsX,ofsY,colors.black,colors.blue,string.rep(" ",boxW))
-		printC(ofsX+1,ofsY,colors.black,colors.blue,(title or "User Input"))
-		printC(ofsX,ofsY+1,colors.black,colors.white,string.rep(" ",boxW))
-		printC(ofsX,ofsY+2,colors.black,colors.white,string.rep(" ",boxW))
-		printC(ofsX,ofsY+3,colors.black,colors.white,string.rep(" ",boxW))
-		
-		for i = 1,#options do
-			if i == selected then
-				term.setBackgroundColor(colors.lightGray)
-				term.setCursorPos(range[i].s + ofC + ofsX - 1,ofsY + 3)
-				term.write("["..options[i].."]")
-				term.setBackgroundColor(colors.white)
-				term.write(" ")
-			else
-				term.setCursorPos(range[i].s + ofC + ofsX - 1,ofsY + 3)
-				term.write(" "..options[i].." ")
-			end
-		end
-		
-		printC(ofsX+2,ofsY+2,colors.black,colors.lightGray,string.rep(" ",boxW-4))
-	end
-	drawBox()
-	term.setCursorPos(ofsX+2,ofsY+2)
-	local co = coroutine.create(function() return readMOD(nil,nil,boxW - 4) end)
-	while true do
-		local event = {os.pullEvent()}
-		if event[1] == "key" or event[1] == "char" then
-			if event[2] == 28 then
-				local test,data = coroutine.resume(co,"return")
-				return data
-			else
-				coroutine.resume(co,unpack(event))
-			end
-		elseif event[1] == "mouse_click" then
-			if event[4] == ofsY + 3 then
-				for i = 1,#options do
-					if event[3] >= range[i].s + ofC + ofsX - 1 and event[3] <= range[i].f + ofC + ofsX then
-						if options[i] == "ok" then
-							local test,data = coroutine.resume(co,"return")
-							return data
-						elseif options[i] == "cancel" then
-							return false
-						end
-					end
-				end
-			end
-		end
-	end
+local function InputBox(...)
+    return DialogBox.inputBox(...)
 end
 
-local function dialogBox(title,message,options, h, w)
-	term.setCursorBlink(false)
-	local selected = 1
-	title = title or ""
-	message = message or ""
-	options = options or {}
-	local boxW,boxH = (w or 26), (h or 3)
-	local termX,termY = term.getSize()
-	local ofsX,ofsY = math.ceil((termX/2) - (boxW/2)) , math.ceil((termY/2) - (boxH/2)) -- offset from top left
-	
-	local space = 0
-	local range = {}
-	for i = 1,#options do
-		range[i] = {s = space,f = space + string.len(options[i])}
-		space = space + string.len(options[i])+3
-	end
-	local ofC = math.ceil((boxW/2)) - math.ceil((space/2))
-	
-	local function drawBox()
-		printC(ofsX,ofsY,dialogTitle.txt,dialogTitle.back," "..title..string.rep(" ",boxW-#title-2))
-		term.setBackgroundColor(colors.red)
-		term.setTextColor(colors.white)
-		term.write("X")
-		printC(ofsX,ofsY+1,dialogWindo.txt,dialogWindo.back,string.sub(" "..message..string.rep(" ",boxW),1,boxW))
-		term.setCursorPos(ofsX,ofsY+2)
-		term.write(string.rep(" ",boxW))
-		term.setCursorPos(ofsX,ofsY+3)
-		term.write(string.rep(" ",boxW))
-		for i = 1,#options do
-			if i == selected then
-				printC(range[i].s + ofC + ofsX - 1,ofsY + 3,"black","lightGray","["..options[i].."]")
-				term.setBackgroundColor(dialogWindo.back)
-				term.setTextColor(dialogWindo.txt)
-				term.write(" ")
-			else
-				term.setCursorPos(range[i].s + ofC + ofsX - 1,ofsY + 3)
-				term.write(" "..options[i].." ")
-			end
-		end
-		term.setCursorPos(ofsX + ofC + space,ofsY + 3)
-		term.write(string.rep(" ",boxW - (ofC + space)))
-		term.setBackgroundColor(colors.black)
-		term.setTextColor(colors.white)			
-	end
-	while true do
-		drawBox()
-		event = {os.pullEvent()}
-		if event[1] == "key" then
-			if event[2] == 203 then -- left
-				selected = selected - 1
-				if selected < 1 then
-					selected = #options
-				end
-			elseif event[2] == 205 then -- right
-				selected = selected + 1
-				if selected > #options then
-					selected = 1
-				end
-			elseif event[2] == 28 then -- enter
-				return selected , options[selected]
-			end
-		elseif event[1] == "mouse_click" then
-			
-			if bugTest then term.write("M "..event[2].." X "..event[3].." Y "..event[4].."    ") end
-			
-			if event[2] == 1 then
-				if event[4] == ofsY + 3 then
-					for i = 1,#options do
-						if event[3] >= range[i].s + ofC + ofsX - 1 and event[3] <= range[i].f + ofC + ofsX then
-							return i , options[i]
-						end
-					end
-				end
-			end
-		end
-	end
+local function dialogBox(...)
+	return DialogBox.dialogBox(...)
 end
 
 local flag = true
@@ -621,7 +485,6 @@ local function osRunSpaces(sFileLocation,...) -- getRunningProgram() ["shell"] =
 end
 
 local function rClickMenu(title,tList,tItem,posX,posY)
-
 	term.setCursorBlink(false)
 	local BoxTitle = title
 	local choices = {}
@@ -629,7 +492,7 @@ local function rClickMenu(title,tList,tItem,posX,posY)
 	local offX,offY
 	
 	local width = #BoxTitle + 2
-	local hight
+	local height
 	
 	for k,v in pairs(tList) do
 		if v ~= nil then
@@ -644,19 +507,19 @@ local function rClickMenu(title,tList,tItem,posX,posY)
 		return
 	end
 	
-	hight = #choices + 1
+	height = #choices + 1
 	table.sort(choices)
 	
-	offX,offY = math.ceil((termX/2) - (width/2)),math.ceil((termY/2) - (hight/2))
+	offX,offY = math.ceil((termX/2) - (width/2)),math.ceil((termY/2) - (height/2))
 	
 	if posX and posY then -- offX,offY = posX,posY
-		if posX >= termX - width - 1 then
-			offX = termX - width - 1
+		if posX >= termX - width + 1 then
+			offX = termX - width + 1
 		else
 			offX = posX
 		end
-		if posY >= termY - hight then
-			offY = termY - hight
+		if posY >= termY - height + 1 then
+			offY = termY - height + 1
 		else
 			offY = posY
 		end
@@ -674,7 +537,7 @@ local function rClickMenu(title,tList,tItem,posX,posY)
 		local event = {os.pullEvent()}
 		if event[1] == "mouse_click" then
 			if event[2] == 1 then -- event[3] = x event[4] = y
-				if event[4] > offY and event[4] < hight + offY and event[3] >= offX and event[3] < width + offX then
+				if event[4] > offY and event[4] < height + offY and event[3] >= offX and event[3] < width + offX then
 					--dialogBox("ERROR:",type(tList[choices[event[4] - offY]]),{"ok"})
 					if type(tList[choices[event[4] - offY]]) == "function" then
 						return tList[choices[event[4] - offY]](tItem)
@@ -714,8 +577,8 @@ local function preferences()
 		{txt = "Scroll Bar",it = scrollCol}
 	}
 	local topL,topR = 13,5
-	local width,hight = 23,6
-	local bottomL,bottomR = topL + width,topR + hight
+	local width,height = 23,6
+	local bottomL,bottomR = topL + width,topR + height
 	
 	local listOffset = 0
 	local sel = 1
@@ -737,7 +600,7 @@ local function preferences()
 			end
 		end
 		local sSel = " "
-		for i = 1,hight - 2 do
+		for i = 1,height - 2 do
 			if i == sel - listOffset then
 				sSel = ">"
 			end
@@ -750,7 +613,7 @@ local function preferences()
 				sSel = " "
 			end
 		end
-		term.setCursorPos(topL,topR + hight - 1)
+		term.setCursorPos(topL,topR + height - 1)
 		local loop = 1
 		local length = 0
 			for i = 1,#otherItems do
@@ -777,9 +640,9 @@ local function preferences()
 		draw()
 		local event = {os.pullEvent()}
 		if event[1] == "mouse_click" and event[2] == 1 then
-			if inBouwndry(event[3],event[4],topL,topR,width,hight) then
+			if inBoundary(event[3],event[4],topL,topR,width,height) then
 				local inSideX,inSideY = event[3] - topL,event[4] - topR
-				if inBouwndry(inSideX+1,inSideY,1,1,4,4) and tItem[sel] then
+				if inBoundary(inSideX+1,inSideY,1,1,4,4) and tItem[sel] then
 					--[[
 					term.setCursorPos(1,1)
 					term.setBackgroundColor(2^(inSideX + ((inSideY*4)-4)))
@@ -809,7 +672,7 @@ local function preferences()
 		elseif sel > #tItem then
 			sel = #tItem
 		end
-		if sel > listOffset + hight - 2 then
+		if sel > listOffset + height - 2 then
 			listOffset = listOffset + 1
 		elseif sel - listOffset < 1 then
 			listOffset = listOffset - 1
@@ -847,12 +710,12 @@ local function fileSelect(mode) -- save_file open_file browse < not yet implemen
 	
 	local termX,termY = term.getSize()
 	local offsetX,offsetY = 0,-1
-	local hight,width = math.ceil(termY + 1),math.ceil(termX + 1)
-	local oldHight,oldWidth
+	local height,width = math.ceil(termY + 1),math.ceil(termX + 1)
+	local oldHeight,oldWidth
 	
 	-- offsets
 	local boxOffX,boxOffY = offsetX,offsetY + 2
-	local boxH,boxW = hight - 2 ,width - 2
+	local boxH,boxW = height - 2 ,width - 2
 	
 	local barX,barY = offsetX + 1,offsetY + 2
 	local barH,barW = 1,width - 1
@@ -1134,20 +997,20 @@ local function fileSelect(mode) -- save_file open_file browse < not yet implemen
 		if flag then
 			flag = false
 			-- clear
-			if oldHight ~= hight and oldWidth ~= width then
+			if oldHeight ~= height and oldWidth ~= width then
 				term.setBackgroundColor(colors.black)
 				term.clear()
-				oldHight,oldWidth = hight,width
+				oldHeight,oldWidth = height,width
 			end
 			-- draw top title bar
-			local b = tbarW - #title -2
-			if b < 0 then
-				b = 0
-			end
-			printC(tbarX,tbarY,titleBar.txt,titleBar.back,string.sub(" "..title,1,tbarW)..string.rep(" ",b))
-			term.setTextColor(colors.white)
-			term.setBackgroundColor(colors.red)
-			term.write("X")
+			--local b = tbarW - #title -2
+			--if b < 0 then
+			--	b = 0
+			--end
+			--printC(tbarX,tbarY,titleBar.txt,titleBar.back,string.sub(" "..title,1,tbarW)..string.rep(" ",b))
+			--term.setTextColor(colors.white)
+			--term.setBackgroundColor(colors.red)
+			--term.write("X")
 			
 			-- draw location bar
 			local a = barW - #sPath - 1
@@ -1217,9 +1080,9 @@ local function fileSelect(mode) -- save_file open_file browse < not yet implemen
             --end
             flag = true
 		elseif event[1] == "mouse_click" then
-			if inBouwndry(event[3],event[4],boxOffX+1,boxOffY+1,boxW,boxH) then
+			if inBoundary(event[3],event[4],boxOffX+1,boxOffY+1,boxW,boxH) then
 				local selected = tItemList[event[4]+listOff-boxOffY]
-				if selected and inBouwndry(event[3],event[4],boxOffX+1,event[4],#selected.n + 4,1) then
+				if selected and inBoundary(event[3],event[4],boxOffX+1,event[4],#selected.n + 4,1) then
 					if event[2] == 1 then -- left mouse
 						if selected.id == "back" then
 							table.remove(path,#path)
@@ -1276,10 +1139,10 @@ local function fileSelect(mode) -- save_file open_file browse < not yet implemen
 		elseif event[1] == "window_resize" then
 			termX,termY = term.getSize()
 			offsetX,offsetY = 0,0
-			hight,width = math.ceil(termY + 1),math.ceil(termX + 1)
+			height,width = math.ceil(termY + 1),math.ceil(termX + 1)
 			
 			boxOffX,boxOffY = offsetX,offsetY + 2
-			boxH,boxW = hight - 2 ,width - 2
+			boxH,boxW = height - 2 ,width - 2
 			
 			barX,barY = offsetX + 1,offsetY + 2
 			barH,barW = 1,width - 1
@@ -1298,6 +1161,8 @@ local function fileSelect(mode) -- save_file open_file browse < not yet implemen
 end
 
 local function main()
+    os.loadAPI("/MineOS/API/DialogBox")
+    
 	if term.isColor() then
 		clear()
 		fileSelect()

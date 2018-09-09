@@ -170,6 +170,16 @@ function inputBox(title)
 				term.write(" "..options[i].." ")
 			end
 		end
+        
+        term.setBackgroundColor(colors.black)
+        for i = 1, boxW do
+            term.setCursorPos(ofsX + i, ofsY + boxH + 1)
+            term.write(" ")
+        end
+        for i = 1, boxH do
+            term.setCursorPos(ofsX + boxW, ofsY + i)
+            term.write(" ")
+        end
 		
 		printC(ofsX+2,ofsY+2,dialogInput.txt,dialogInput.back,string.rep(" ",boxW-4))
 	end
@@ -246,7 +256,17 @@ function dialogBox(title, message, options, w, h)
 		term.setCursorPos(ofsX + ofC + space,ofsY + 3)
 		term.write(string.rep(" ",boxW - (ofC + space)))
 		term.setBackgroundColor(colors.black)
-		term.setTextColor(colors.white)			
+		term.setTextColor(colors.white)
+        
+        term.setBackgroundColor(colors.black)
+        for i = 1, boxW do
+            term.setCursorPos(ofsX + i, ofsY + boxH + 1)
+            term.write(" ")
+        end
+        for i = 1, boxH do
+            term.setCursorPos(ofsX + boxW, ofsY + i)
+            term.write(" ")
+        end
 	end
 	while true do
 		drawBox()

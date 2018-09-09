@@ -329,14 +329,16 @@ local function drawStartMenu()
             parentTerm.write(" ")
         end
     end
-    parentTerm.setBackgroundColor(startMenuBgColor)
-    parentTerm.setTextColor(startMenuTextColor)
     for i = 1, #tStartMenu do
+        parentTerm.setBackgroundColor(startMenuBgColor)
+        parentTerm.setTextColor(startMenuTextColor)
         parentTerm.setCursorPos(1, ofs + i)
         parentTerm.write(tStartMenu[i].name)
         for i = 1, 14 - #tStartMenu[i].name do
             parentTerm.write(" ")
         end
+        parentTerm.setBackgroundColor(colors.black)
+        parentTerm.write(" ")
     end
 end
 
@@ -481,15 +483,16 @@ timer = os.startTimer(0)
 
 -- Run processes
 while bIsRunning do
+    -- Get the event
+    local tEventData = {os.pullEventRaw()}
+    local sEvent = tEventData[1]
+    
+    if sEvent == "timer" and tEventData[2] == timer then
+        timer = os.startTimer(nInterval)
+    end
+    
     if #tProcesses > 0 then
-        -- Get the event
-        local tEventData = {os.pullEventRaw()}
-        local sEvent = tEventData[1]
-        
-        if sEvent == "timer" and tEventData[2] == timer then
-            timer = os.startTimer(nInterval)
-        
-        elseif sEvent == "term_resize" then
+        if sEvent == "term_resize" then
             -- Resize event
             w,h = parentTerm.getSize()
             resizeWindows()
@@ -592,8 +595,6 @@ while bIsRunning do
         end
     else
         -- Get the event
-        local tEventData = {os.pullEventRaw()}
-        local sEvent = tEventData[1]
         local doSkipRedraw = false
         
         if sEvent == "term_resize" then
