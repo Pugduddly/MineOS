@@ -739,8 +739,10 @@ while bIsRunning do
                                             if cullProcess(n) then
                                                 redrawMenu()
                                             end
-                                            selectProcess(oldCurrentProcess)
-                                            redrawMenu()
+                                            if oldCurrentProcess ~= n then
+                                                selectProcess(oldCurrentProcess)
+                                                redrawMenu()
+                                            end
                                             timer = os.startTimer(nInterval)
                                         end },
                                     }, x, y)
@@ -757,8 +759,10 @@ while bIsRunning do
                                             if cullProcess(n) then
                                                 redrawMenu()
                                             end
-                                            selectProcess(oldCurrentProcess)
-                                            redrawMenu()
+                                            if oldCurrentProcess ~= n then
+                                                selectProcess(oldCurrentProcess)
+                                                redrawMenu()
+                                            end
                                             timer = os.startTimer(nInterval)
                                         end },
                                     }, x, y)
