@@ -25,7 +25,11 @@ function doErrorTrap(fCall)
 		print(result[2])
 		term.setCursorPos(12,16)
 		write("Press any key to continue ")
-		response = read("")
-		--os.run({["shell"] = shell, ["multishell"] = multishell}, "/MineOS/bin/desktop")
+		while true do
+            local event = {os.pullEvent()}
+            if event[1] == "key" then
+                break
+            end
+        end
 	end
 end

@@ -28,7 +28,7 @@ wVersion = wVersionS.readLine()
 wVersionS.close()
 
 -- Show real FreeSpace --
-realFreeSpace = true
+realFreeSpace = false
 MySpace = "800"
 -- Standard files --
 ChangedName1 = "Guest"

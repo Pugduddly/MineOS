@@ -29,16 +29,17 @@ local w,h = parentTerm.getSize()
 
 local tProcesses = {}
 local tStartMenu = {
-    {name = "CraftOS", command = {"/rom/programs/shell"}},
-    {name = "Explorer", command = {"/rom/programs/shell", "/MineOS/Programs/Explorer"}},
-    {name = "Firewolf", command = {"/rom/programs/shell", "/MineOS/Programs/Firewolf"}},
+    {name = "CraftOS", command = {"/rom/programs/shell", runInShell = true}},
+    {name = "Explorer", command = {"/MineOS/Programs/Explorer", runInShell = true}},
+    {name = "Firewolf", command = {"/MineOS/Programs/Firewolf", runInShell = true}},
     {name = "Settings", command = {"/MineOS/Programs/Settings"}},
     {name = ""},
-    {name = "Run", command = {"/MineOS/bin/run"}, doRunNative = true},
+    {name = "Run", command = {"/MineOS/bin/run", doRunNative = true}},
     {name = ""},
-    {name = "Shutdown", command = {"/MineOS/bin/shutdown"}, doRunNative = true},
-    {name = "Reboot", command = {"/MineOS/bin/reboot"}, doRunNative = true}
+    {name = "Shutdown", command = {"/MineOS/bin/shutdown", doRunNative = true}},
+    {name = "Reboot", command = {"/MineOS/bin/reboot", doRunNative = true}}
 }
+local tContextMenus = {}
 local nCurrentProcess = nil
 local nRunningProcess = nil
 local nInterval = 0.1
@@ -220,29 +221,31 @@ local function redrawMenu()
             end
         end
         
-        -- Draw titlebar
-        parentTerm.setCursorPos(1, 1)
-        parentTerm.setBackgroundColor(titleBgColor)
-        parentTerm.setTextColor(titleTextColor)
-        parentTerm.clearLine()
-        for n=1,#tProcesses do
-            if n == nCurrentProcess then
-                parentTerm.write(" " .. tProcesses[n].sTitle)
+        if nCurrentProcess ~= nil then
+            -- Draw titlebar
+            parentTerm.setCursorPos(1, 1)
+            parentTerm.setBackgroundColor(titleBgColor)
+            parentTerm.setTextColor(titleTextColor)
+            parentTerm.clearLine()
+            for n=1,#tProcesses do
+                if n == nCurrentProcess then
+                    parentTerm.write(" " .. tProcesses[n].sTitle)
+                end
             end
-        end
-        parentTerm.setCursorPos(w - 3, 1)
-        parentTerm.setBackgroundColor(titleBgColor)
-        parentTerm.setTextColor(titleTextColor)
-        parentTerm.write("- ")
-        parentTerm.setCursorPos(w - 1, 1)
-        parentTerm.setBackgroundColor(titleCloseBgColor)
-        parentTerm.setTextColor(titleCloseTextColor)
-        parentTerm.write(" X")
+            parentTerm.setCursorPos(w - 3, 1)
+            parentTerm.setBackgroundColor(titleBgColor)
+            parentTerm.setTextColor(titleTextColor)
+            parentTerm.write("- ")
+            parentTerm.setCursorPos(w - 1, 1)
+            parentTerm.setBackgroundColor(titleCloseBgColor)
+            parentTerm.setTextColor(titleCloseTextColor)
+            parentTerm.write(" X")
 
-        -- Put the cursor back where it should be
-        local tProcess = tProcesses[nCurrentProcess]
-        if tProcess then
-            tProcess.window.restoreCursor()
+            -- Put the cursor back where it should be
+            local tProcess = tProcesses[nCurrentProcess]
+            if tProcess then
+                tProcess.window.restoreCursor()
+            end
         end
     end
 end
@@ -316,6 +319,160 @@ local function drawImage(term, tImage, xPos, yPos, width, height)
     end
 end
 
+local function reindex(oldTable)
+    local function length(table)
+        local length = 0
+        for k, v in pairs(table) do
+            length = length + 1
+        end
+        return length
+    end
+    
+    local newTable = {}
+    local newTableIndex = 1
+    for i = 1, #oldTable do
+        if not (type(oldTable[i]) == "table" and length(oldTable[i]) == 0) then
+            newTable[newTableIndex] = oldTable[i]
+            newTableIndex = newTableIndex + 1
+        end
+    end
+    return newTable
+end
+
+local function drawContextMenus()
+    for i = 1, #tContextMenus do
+        local tContextMenu = tContextMenus[i].items
+        local ofsX = tContextMenus[i].ofsX
+        local ofsY = tContextMenus[i].ofsY
+        local width = tContextMenus[i].width
+        for j = 1, #tContextMenu do
+            parentTerm.setBackgroundColor(startMenuBgColor)
+            parentTerm.setTextColor(startMenuTextColor)
+            parentTerm.setCursorPos(ofsX, ofsY + j - 1)
+            parentTerm.write(tContextMenu[j].name)
+            for i = 1, width - #tContextMenu[j].name do
+                parentTerm.write(" ")
+            end
+            if j > i then
+                parentTerm.setBackgroundColor(colors.black)
+                parentTerm.write(" ")
+            end
+        end
+        parentTerm.setBackgroundColor(colors.black)
+        parentTerm.setCursorPos(ofsX + 1, ofsY + #tContextMenu)
+        for j = 1, width do
+            parentTerm.write(" ")
+        end
+    end
+end
+
+local function doDebugPrint(...)
+    local tArgs = { ... }
+    parentTerm.setBackgroundColor(colors.black)
+    parentTerm.setTextColor(colors.white)
+    parentTerm.clear()
+    parentTerm.setCursorPos(1, 1)
+    for i = 1, #tArgs do    
+        print(tArgs[i])
+    end
+    print("Press any key...")
+    while true do
+        local event = { os.pullEvent() }
+        if event[1] == "key" then
+            break
+        end
+    end
+    parentTerm.clear()
+    parentTerm.setCursorPos(1, 1)
+end
+
+local function doContextMenuClick(button, x, y)
+    if #tContextMenus == 0 then return false end
+    if button ~= 1 then
+        tContextMenus = {}
+        return false
+    end
+    local continueLoop = true
+    for j = #tContextMenus, 1 do
+        local tContextMenu = tContextMenus[j].items
+        local ofsX = tContextMenus[j].ofsX
+        local ofsY = tContextMenus[j].ofsY
+        local width = tContextMenus[j].width
+        if x >= ofsX and x < ofsX + width and y >= ofsY and y < ofsY + #tContextMenu then
+            bStartMenuOpen = false
+            for i = 1, #tContextMenu do
+                if y == ofsY + i - 1 then
+                    if tContextMenu[i].command ~= nil and not (type(tContextMenu[i].command) == "table" and #tContextMenu[i].command == 0) then
+                        parentTerm.setCursorBlink(false)
+                        parentTerm.setBackgroundColor(startMenuTextColor)
+                        parentTerm.setTextColor(startMenuBgColor)
+                        parentTerm.setCursorPos(ofsX, ofsY + i - 1)
+                        parentTerm.write(tContextMenu[i].name)
+                        for i = 1, width - #tContextMenu[i].name do
+                            parentTerm.write(" ")
+                        end
+                        --os.sleep(0.25)
+                        if type(tContextMenu[i].command) == "table" then
+                            if tContextMenu[i].command.doRunNative == true then
+                                local oldTerm = term.current()
+                                term.redirect(parentTerm)
+                                os.run(envVars, table.unpack(tContextMenu[i].command))
+                                term.redirect(oldTerm)
+                            else
+                                local newCommand = {table.unpack(tContextMenu[i].command)}
+                                if tContextMenu[i].command.runInShell == true then
+                                    newCommand = {"/rom/programs/shell", table.unpack(newCommand)}
+                                end
+                                local nTask = envVars["multishell"].launch(envVars, table.unpack(newCommand))
+                                if nTask then
+                                    envVars["multishell"].setFocus(nTask)
+                                end
+                            end
+                        elseif type(tContextMenu[i].command) == "function" then
+                            tContextMenu[i].command()
+                        end
+                        continueLoop = false
+                        break
+                    end
+                end
+            end
+            if not continueLoop then break end
+        end
+    end
+    --[[if retVal then
+        tContextMenus = reindex(tContextMenus)
+    end]]--
+    tContextMenus = {}
+    return true
+end
+
+local function openContextMenu(items, posX, posY)
+    local width, height = 8, #items
+    
+    for i = 1, #items do
+        if #items[i].name > width then
+            width = #items[i].name
+        end
+    end
+    
+    local offX, offY = math.ceil((w/2) - (width/2)),math.ceil((h/2) - (height/2))
+	
+	if posX and posY then
+		if posX >= w - width + 1 then
+			offX = w - width + 1
+		else
+			offX = posX
+		end
+		if posY >= h - height + 1 then
+			offY = h - height + 1
+		else
+			offY = posY
+		end
+	end
+    
+    tContextMenus[#tContextMenus + 1] = {items = items, ofsX = offX, ofsY = offY, width = width}
+end
+
 local function drawStartMenu()
     local ofs = h - #tStartMenu - 1
     parentTerm.setBackgroundColor(titleBgColor)
@@ -342,10 +499,45 @@ local function drawStartMenu()
     end
 end
 
+local function splitStr(str, sep)
+    str = str or ""
+    local sep, fields = sep or ":", {}
+    local pattern = string.format("([^%s]+)", sep)
+    str:gsub(pattern, function(c) fields[#fields+1] = c end)
+    return fields
+end
+
+local function getPathOf(str)
+    local table1 = splitStr(str, "/")
+    local result = "/"
+    for i = 1, #table1 - 1 do
+        result = result .. table1[i] .. "/"
+    end
+    return result
+end
+
 local function doStartMenuClick(button, x, y)
-    parentTerm.setCursorBlink(false)
     local ofs = h - #tStartMenu - 1
-    if x >= 1 and x <= 7 and y == h and not bStartMenuOpen then
+    
+    function openMenuItem(i)
+        if tStartMenu[i].command.doRunNative == true then
+            local oldTerm = term.current()
+            term.redirect(parentTerm)
+            os.run(envVars, table.unpack(tStartMenu[i].command))
+            term.redirect(oldTerm)
+        else
+            local newCommand = {table.unpack(tStartMenu[i].command)}
+            if tStartMenu[i].command.runInShell == true then
+                newCommand = {"/rom/programs/shell", table.unpack(newCommand)}
+            end
+            local nTask = envVars["multishell"].launch(envVars, table.unpack(newCommand))
+            if nTask then
+                envVars["multishell"].setFocus(nTask)
+            end
+        end
+    end
+
+    if x >= 1 and x <= 7 and y == h and not bStartMenuOpen and button == 1 then
         bStartMenuOpen = true
         return true
     elseif not (y == ofs and x <= 14) and bStartMenuOpen then
@@ -355,26 +547,27 @@ local function doStartMenuClick(button, x, y)
                 if tStartMenu[i].command == nil or #tStartMenu[i].command == 0 then
                     bStartMenuOpen = true
                 else
-                    parentTerm.setBackgroundColor(startMenuTextColor)
-                    parentTerm.setTextColor(startMenuBgColor)
-                    parentTerm.setCursorPos(1, ofs + i)
-                    parentTerm.write(tStartMenu[i].name)
-                    for i = 1, 14 - #tStartMenu[i].name do
-                        parentTerm.write(" ")
-                    end
-                    os.sleep(0.25)
-                    if tStartMenu[i].doRunNative == true then
-                        local oldTerm = term.current()
-                        term.redirect(parentTerm)
-                        os.run(envVars, table.unpack(tStartMenu[i].command))
-                        term.redirect(oldTerm)
-                    else
-                        local nTask = envVars["multishell"].launch(envVars, table.unpack(tStartMenu[i].command))
-                        if nTask then
-                            envVars["multishell"].setFocus(nTask)
+                    if button == 1 then
+                        parentTerm.setCursorBlink(false)
+                        parentTerm.setBackgroundColor(startMenuTextColor)
+                        parentTerm.setTextColor(startMenuBgColor)
+                        parentTerm.setCursorPos(1, ofs + i)
+                        parentTerm.write(tStartMenu[i].name)
+                        for j = 1, 14 - #tStartMenu[i].name do
+                            parentTerm.write(" ")
                         end
+                        --os.sleep(0.25)
+                        openMenuItem(i)
+                    elseif button == 2 then
+                        bStartMenuOpen = true
+                        local command = {table.unpack(tStartMenu[i].command)}
+                        openContextMenu({
+                            { name = "Open", command = function()
+                                openMenuItem(i)
+                            end},
+                            { name = "View File Location", command = { "/MineOS/Programs/Explorer", "--dir", getPathOf(command[1]), runInShell = true}}
+                        }, x, y)
                     end
-                    timer = os.startTimer(nInterval)
                 end
             end
         end
@@ -511,7 +704,10 @@ while bIsRunning do
             -- Click event
             local button, x, y = tEventData[2], tEventData[3], tEventData[4]
             local oldStartMenuState = bStartMenuSelected
-            local doMenuUpdate = doStartMenuClick(button, x, y)
+            local doMenuUpdate = doContextMenuClick(button, x, y)
+            if not doMenuUpdate then
+                doMenuUpdate = doStartMenuClick(button, x, y)
+            end
             if not doMenuUpdate then
                 if bShowMenu and y == h then
                     -- Switch process
@@ -519,21 +715,63 @@ while bIsRunning do
                     for n=1,#tProcesses do
                         tabEnd = tabStart + 10
                         if x >= tabStart and x < tabEnd then
-                            if nCurrentProcess == n then
-                                deselectProcess(n)
-                            else
-                                selectProcess(n)
+                            if button == 1 then
+                                if nCurrentProcess == n then
+                                    deselectProcess(n)
+                                else
+                                    selectProcess(n)
+                                end
+                                redrawMenu()
+                            elseif button == 2 then
+                                local oldCurrentProcess = nCurrentProcess
+                                selectProcess(nCurrentProcess)
+                                redrawMenu()
+                                if nCurrentProcess == n then
+                                    openContextMenu({
+                                        { name = "Hide", command = function()
+                                            deselectProcess(n)
+                                            redrawMenu()
+                                        end },
+                                        { name = "Close", command = function()
+                                            selectProcess(n)
+                                            redrawMenu()
+                                            resumeProcess(n, "terminate")
+                                            if cullProcess(n) then
+                                                redrawMenu()
+                                            end
+                                            selectProcess(oldCurrentProcess)
+                                            redrawMenu()
+                                            timer = os.startTimer(nInterval)
+                                        end },
+                                    }, x, y)
+                                else
+                                    openContextMenu({
+                                        { name = "Show", command = function()
+                                            selectProcess(n)
+                                            redrawMenu()
+                                        end },
+                                        { name = "Close", command = function()
+                                            selectProcess(n)
+                                            redrawMenu()
+                                            resumeProcess(n, "terminate")
+                                            if cullProcess(n) then
+                                                redrawMenu()
+                                            end
+                                            selectProcess(oldCurrentProcess)
+                                            redrawMenu()
+                                            timer = os.startTimer(nInterval)
+                                        end },
+                                    }, x, y)
+                                end
                             end
-                            redrawMenu()
                             break
                         end
                         tabStart = tabEnd
                     end
-                elseif y == 1 then
+                elseif y == 1 and button == 1 then
                     if (x == w - 1 or x == w) and nCurrentProcess ~= nil then
                         resumeProcess(nCurrentProcess, "terminate")
                         if cullProcess(nCurrentProcess) then
-                            --setMenuVisible(#tProcesses >= 2)
                             redrawMenu()
                         end
                         timer = os.startTimer(nInterval)
@@ -541,6 +779,22 @@ while bIsRunning do
                         deselectProcess(nCurrentProcess)
                         redrawMenu()
                     end
+                elseif y == 1 and button == 2 then
+                    selectProcess(nCurrentProcess)
+                    redrawMenu()
+                    openContextMenu({
+                        { name = "Hide", command = function()
+                            deselectProcess(nCurrentProcess)
+                            redrawMenu()
+                        end },
+                        { name = "Close", command = function()
+                            resumeProcess(nCurrentProcess, "terminate")
+                            if cullProcess(nCurrentProcess) then
+                                redrawMenu()
+                            end
+                            timer = os.startTimer(nInterval)
+                        end },
+                    }, x, y)
                 elseif nCurrentProcess ~= nil and not (bStartMenuOpen and y >= h - #tStartMenu - 1 and x <= 14) then
                     -- Passthrough to current process
                     resumeProcess(nCurrentProcess, sEvent, button, x, (bShowMenu and y - 1) or y)
@@ -594,9 +848,6 @@ while bIsRunning do
             end
         end
     else
-        -- Get the event
-        local doSkipRedraw = false
-        
         if sEvent == "term_resize" then
             -- Resize event
             w,h = parentTerm.getSize()
@@ -604,19 +855,33 @@ while bIsRunning do
         elseif sEvent == "mouse_click" then
             -- Click event
             local button, x, y = tEventData[2], tEventData[3], tEventData[4]
-            doSkipRedraw = doSkipRedraw or doStartMenuClick(button, x, y)
+            local doMenuUpdate = doContextMenuClick(button, x, y)
+            if not doMenuUpdate then
+                doMenuUpdate = doStartMenuClick(button, x, y)
+            end
+            if not doMenuUpdate then
+                --[[if button == 2 then
+                    openContextMenu({
+                        { name = "hello", command = { "/rom/programs/shell", "hello" }},
+                        { name = "worm", command = { "/rom/programs/shell", "worm" }},
+                        { name = "shell", command = { "/rom/programs/shell", "shell" }}
+                    }, x, y)
+                end]]--
+            end
         end
     end
     
-    if nCurrentProcess == nil and not bStartMenuOpen then
+    if nCurrentProcess == nil and ((not bStartMenuOpen and #tContextMenus == 0) or sEvent == "mouse_click") then
         parentTerm.setCursorBlink(false)
         drawImage(parentTerm, bgimage, 1, 1, w, h - 1)
+        redrawMenu()
         timer = os.startTimer(nInterval)
     end
     if bStartMenuOpen then
         drawStartMenu()
     end
     drawClock()
+    drawContextMenus()
 end
 
 -- Shutdown

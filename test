@@ -1,0 +1,65 @@
+function reindex(oldTable)
+    function length(table)
+        local length = 0
+        for k, v in pairs(table) do
+            length = length + 1
+        end
+        return length
+    end
+    
+    local newTable = {}
+    local newTableIndex = 1
+    for i = 1, #oldTable do
+        if not (type(oldTable[i]) == "table" and length(oldTable[i]) == 0) then
+            newTable[newTableIndex] = oldTable[i]
+            newTableIndex = newTableIndex + 1
+        end
+    end
+    return newTable
+end
+
+table = {
+    "foo", "bar", {}, 1234, { hug = "please" }
+}
+
+print(textutils.serialize(reindex(table)))
+
+local function splitStr(str, sep)
+    local sep, fields = sep or ":", {}
+    local pattern = string.format("([^%s]+)", sep)
+    str:gsub(pattern, function(c) fields[#fields+1] = c end)
+    return fields
+end
+
+local function reindex2(oldTable)
+    local newTable = {}
+    local newTableIndex = 1
+    for i = 1, #oldTable do
+        if #oldTable[i] ~= 0 then
+            newTable[newTableIndex] = oldTable[i]
+            newTableIndex = newTableIndex + 1
+        end
+    end
+    return newTable
+end
+
+local function formatPath(path)
+    return reindex2(splitStr(path, "/"))
+end
+
+path = "/MineOS/Programs/"
+print(path)
+print(textutils.serialize(formatPath(path)))
+
+local function getPathOf(str)
+    local table1 = splitStr(str, "/")
+    local result = "/"
+    for i = 1, #table1 - 1 do
+        result = result .. table1[i] .. "/"
+    end
+    return result
+end
+
+path = "/MineOS/Programs/Explorer"
+print(path)
+print(getPathOf(path))
