@@ -28,17 +28,7 @@ local parentTerm = term.current()
 local w,h = parentTerm.getSize()
 
 local tProcesses = {}
-local tStartMenu = {
-    {name = "CraftOS", command = {"/rom/programs/shell", runInShell = true}},
-    {name = "Explorer", command = {"/MineOS/Programs/Explorer", runInShell = true}},
-    {name = "Firewolf", command = {"/MineOS/Programs/Firewolf", runInShell = true}},
-    {name = "Settings", command = {"/MineOS/Programs/Settings"}},
-    {name = ""},
-    {name = "Run", command = {"/MineOS/bin/run", doRunNative = true}},
-    {name = ""},
-    {name = "Shutdown", command = {"/MineOS/bin/shutdown", doRunNative = true}},
-    {name = "Reboot", command = {"/MineOS/bin/reboot", doRunNative = true}}
-}
+local tStartMenu = {}
 local tContextMenus = {}
 local nCurrentProcess = nil
 local nRunningProcess = nil
@@ -516,6 +506,13 @@ local function getPathOf(str)
     return result
 end
 
+local function loadTable(path)
+    local file = fs.open(path, "r")
+    local result = textutils.unserialize(file.readAll())
+    file.close()
+    return result
+end
+
 local function doStartMenuClick(button, x, y)
     local ofs = h - #tStartMenu - 1
     
@@ -539,6 +536,7 @@ local function doStartMenuClick(button, x, y)
 
     if x >= 1 and x <= 7 and y == h and not bStartMenuOpen and button == 1 then
         bStartMenuOpen = true
+        tStartMenu = loadTable("/MineOS/Config/StartMenu")
         return true
     elseif not (y == ofs and x <= 14) and bStartMenuOpen then
         bStartMenuOpen = false

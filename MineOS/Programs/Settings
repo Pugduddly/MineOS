@@ -1,3 +1,5 @@
+userName = currentUserName
+
 -- ########################## -- Functions -- ############################ --
 local function s(...) return sleep(...) end
 local function w(...) return write(...) end
@@ -19,6 +21,7 @@ sbc(32768)
 stc(1)
 os.loadAPI("MineOS/API/SHA")
 os.loadAPI("MineOS/API/BSOD")
+os.loadAPI("MineOS/API/DialogBox")
 -- ########################## -- ABOUT -- ############################ --
 wEdition = "MineOS"
 wDeveloper = "Pugduddly"
@@ -149,7 +152,7 @@ function SystemInfo()
     write("User Information:")
     stc(256)
     scp(16,12)
-    write("Name: "..currentUserName)
+    write("Name: " .. userName)
 
 
     scp(16,9)
@@ -270,7 +273,7 @@ function SystemProfiles()
     stc(32768)
     write("Profiles    ")
     sbc(1)
-    if currentUserName == EditName1 then
+    if userName == EditName1 then
         sbc(128)
         scp(15,3)
         stc(1)
@@ -318,7 +321,7 @@ function SystemProfiles()
 
 
 
-    if currentUserName == EditName2 then
+    if userName == EditName2 then
         sbc(128)
         scp(15,8)
         stc(1)
@@ -367,7 +370,7 @@ function SystemProfiles()
     end
 
 
-    if currentUserName == EditName3 then
+    if userName == EditName3 then
         sbc(128)
         scp(15,13)
         stc(1)
@@ -701,8 +704,8 @@ function SystemMouse()
                 --############################### Background ##################################--
                 --############## Design 1 ################--
                 if X >= 15 and X <= 25 and Y == 4 then
-                    fs.delete("MineOS/Texture/Desktop/"..currentUserName.."/1")
-                    fs.copy("MineOS/Texture/Desktop/1", "MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    fs.delete("MineOS/Texture/Desktop/"..userName.."/1")
+                    fs.copy("MineOS/Texture/Desktop/1", "MineOS/Texture/Desktop/"..userName.."/1")
                     scp(15,4)
                     sbc(16384)
                     write(" Minecraft ")
@@ -714,8 +717,8 @@ function SystemMouse()
                 end
                 --############## Design 2 ################--
                 if X >= 27 and X <= 37 and Y == 4 then
-                    fs.delete("MineOS/Texture/Desktop/"..currentUserName.."/1")
-                    fs.copy("MineOS/Texture/Desktop/2", "MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    fs.delete("MineOS/Texture/Desktop/"..userName.."/1")
+                    fs.copy("MineOS/Texture/Desktop/2", "MineOS/Texture/Desktop/"..userName.."/1")
                     scp(27,4)
                     sbc(16384)
                     write(" Computer  ")
@@ -727,8 +730,8 @@ function SystemMouse()
                 end
                 --############## Design 3 ################--
                 if X >= 39 and X <= 49 and Y == 4 then
-                    fs.delete("MineOS/Texture/Desktop/"..currentUserName.."/1")
-                    fs.copy("MineOS/Texture/Desktop/3", "MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    fs.delete("MineOS/Texture/Desktop/"..userName.."/1")
+                    fs.copy("MineOS/Texture/Desktop/3", "MineOS/Texture/Desktop/"..userName.."/1")
                     scp(39,4)
                     sbc(16384)
                     write(" Logo      ")
@@ -740,8 +743,8 @@ function SystemMouse()
                 end
                 --############## Design 4 ################--
                 if X >= 15 and X <= 25 and Y == 6 then
-                    fs.delete("MineOS/Texture/Desktop/"..currentUserName.."/1")
-                    fs.copy("MineOS/Texture/Desktop/4", "MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    fs.delete("MineOS/Texture/Desktop/"..userName.."/1")
+                    fs.copy("MineOS/Texture/Desktop/4", "MineOS/Texture/Desktop/"..userName.."/1")
                     scp(15,6)
                     sbc(16384)
                     write(" Creeper   ")
@@ -753,8 +756,8 @@ function SystemMouse()
                 end
                 --############## Design 5 ################--
                 if X >= 27 and X <= 37 and Y == 6 then
-                    fs.delete("MineOS/Texture/Desktop/"..currentUserName.."/1")
-                    fs.copy("MineOS/Texture/Desktop/5", "MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    fs.delete("MineOS/Texture/Desktop/"..userName.."/1")
+                    fs.copy("MineOS/Texture/Desktop/5", "MineOS/Texture/Desktop/"..userName.."/1")
                     scp(27,6)
                     sbc(16384)
                     write(" Hills     ")
@@ -766,8 +769,8 @@ function SystemMouse()
                 end
                 --############## Design 6 ################--
                 if X >= 39 and X <= 49 and Y == 6 then
-                    fs.delete("MineOS/Texture/Desktop/"..currentUserName.."/1")
-                    fs.copy("MineOS/Texture/Desktop/6", "MineOS/Texture/Desktop/"..currentUserName.."/1")
+                    fs.delete("MineOS/Texture/Desktop/"..userName.."/1")
+                    fs.copy("MineOS/Texture/Desktop/6", "MineOS/Texture/Desktop/"..userName.."/1")
                     scp(39,6)
                     sbc(16384)
                     write(" Purple    ")
@@ -779,130 +782,28 @@ function SystemMouse()
                 end
                 --############## Custom # NEW ###############--
                 if X >= 15 and X <= 19 and Y == 9 then
-                    r("MineOS/Programs/Paint MineOS/Texture/Desktop/"..currentUserName.."/1")
-                    r("MineOS/Programs/Settings")
+                    r("fg /rom/programs/fun/advanced/paint MineOS/Texture/Desktop/"..userName.."/1")
                 end
                 --############## Custom # Open ###############--
                 if X >= 21 and X <= 26 and Y == 9 then
-                    sbc(2048)
-                    stc(1)
-                    scp(15,5)
-                    w("Open File         ")
-                    sbc(16384)
-                    w("X")
-                    sbc(1)
-                    stc(32768)
-                    scp(15,6)
-                    w(": Name:           :")
-                    scp(15,7)
-                    sbc(1)
-                    --	w(": ")
-                    --	sbc(258)
-                    --	w("               ")
-                    --	sbc(1)
-                    --	w(" :")
-                    w(":                 :")
-                    sbc(1)
-                    scp(15,8)
-                    w(":                 :")
-                    scp(15,9)
-                    w("+-----------------+")
-                    scp(17,7)
-                    sbc(258)
-                    stc(128)
-                    w("")
-                    scp(17,7)
-                    stc(32768)
-                    fileaddB = read()
-                    if fileaddB == "" then
-                        r("MineOS/Programs/Settings")
-                        error("Terminated")
-                    elseif fs.exists(fileaddB) then
-                        sbc(1)
-                        scp(1,17)
-                        fs.delete("MineOS/Texture/Desktop/"..currentUserName.."/1")
-                        fs.copy(fileaddB, "MineOS/Texture/Desktop/"..currentUserName.."/1")
-                        sbc(256)
-                        scp(17,7)
-                        stc(16384)
-                        w("File added!    ")
-                        sleep(1)
-                        r("MineOS/Programs/Settings")
-                        error("Terminated")
-                    elseif not fs.exists(fileaddB) then
-                        scp(17,7)
-                        stc(16384)
-                        w("File not found!")
-                        sleep(2)
-                        r("MineOS/Programs/Settings")
-                        error("Terminated")
+                    local path = DialogBox.inputBox("File Location")
+                    if path then
+                        shell.run("delete MineOS/Texture/Desktop/"..userName.."/1")
+                        shell.run("copy "..path.." MineOS/Texture/Desktop/"..userName.."/1")
                     end
-                    break
+                    SystemClear()
+                    setLayout()
+                    SystemBackground()
                 end
                 --############## Custom # Pastebin ###############--
                 if X >= 26 and X <= 35 and Y == 9 then
-                    sbc(2048)
-                    stc(1)
-                    scp(15,5)
-                    w("Download file     ")
-                    sbc(16384)
-                    w("X")
-                    sbc(1)
-                    stc(32768)
-                    scp(15,6)
-                    w(": Code:           :")
-                    scp(15,7)
-                    sbc(1)
-                    --	w(": ")
-                    --	sbc(258)
-                    --	w([[               ]])
-                    --	sbc(1)
-                    --	w(" :")
-                    w(":                 :")
-                    sbc(1)
-                    scp(15,8)
-                    w(":                 :")
-                    scp(15,9)
-                    w("+-----------------+")
-                    scp(17,7)
-                    sbc(258)
-                    stc(128)
-                    w("")
-                    scp(17,7)
-                    stc(32768)
-                    fileaddB2 = read()
-                    if fileaddB2 == "" then
-                        r("MineOS/Programs/Settings")
-                        error("Terminated")
-                    else
-
-                        local response = http.get(
-                            "http://pastebin.com/raw.php?i="..textutils.urlEncode( fileaddB2 )
-                        )
-
-                        if response then
-                            fs.delete("MineOS/Texture/Desktop/"..currentUserName.."/1")
-                            local sResponse = response.readAll()
-                            response.close()
-
-                            local file = fs.open("MineOS/Texture/Desktop/"..currentUserName.."/1", "w" )
-                            file.write( sResponse )
-                            file.close()
-                        else
-                            r("MineOS/Programs/Settings")
-                            error("Terminated")
-                        end
-                        sbc(1)
-                        scp(1,17)
-                        sbc(256)
-                        scp(17,7)
-                        stc(16384)
-                        w("File added!    ")
-                        sleep(1)
-                        r("MineOS/Programs/Settings")
-                        error("Terminated")
+                    local id = DialogBox.inputBox("Pastebin ID")
+                    if id then
+                        shell.run("pastebin get "..id.." MineOS/Texture/Desktop/"..userName.."/1")
                     end
-                    break
+                    SystemClear()
+                    setLayout()
+                    SystemBackground()
                 end
                 --########################################--
                 if X >= 1 and X <= 12 and Y == 3 then
