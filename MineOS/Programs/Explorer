@@ -71,7 +71,8 @@ local tIcons = configSet[9] or {
 
 local customLaunch = configSet[10] or {
 	["Edit"] = "rom/programs/edit",
-	["Paint"] = "rom/programs/color/paint"
+	["Paint"] = "rom/programs/color/paint",
+	["Sketch"] = "/MineOS/Programs/Sketch"
 }
 
 local function saveCFG(overWrite)

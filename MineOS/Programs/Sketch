@@ -2290,6 +2290,9 @@ OpenDocumentWindow = {
 
 		if not found then
 			if y <= 12 then
+                if Current.Window and Current.Window.Scroll then
+                    y = y + Current.Window.Scroll
+                end
 				local _fs = fs
 				if OneOS then
 					_fs = OneOS.FS
@@ -3712,7 +3715,7 @@ function CheckClick(object, x, y)
 end
 
 --[[
-	Attempt to clicka given object
+	Attempt to click a given object
 ]]--
 function DoClick(object, side, x, y, drag)
 	if object and CheckClick(object, x, y) then
