@@ -149,21 +149,23 @@ end
 -- Setup the main menu
 local menuMainTextColor, menuMainBgColor, menuOtherTextColor, menuOtherBgColor
 local titleTextColor, titleBgColor, titleCloseTextColor, titleCloseBgColor
-local startButtonTextColor, startButtonBgColor, startMenuTextColor, startMenuBgColor
+local startButtonTextColor, startButtonBgColor, contextMenuTextColor, contextMenuBgColor
 if parentTerm.isColor() then
     menuMainTextColor, menuMainBgColor = colors.white, colors.lightBlue
     menuOtherTextColor, menuOtherBgColor = colors.white, colors.blue
     titleTextColor, titleBgColor = colors.white, colors.blue
     titleCloseTextColor, titleCloseBgColor = colors.white, colors.red
     startButtonTextColor, startButtonBgColor = colors.white, colors.green
-    startMenuTextColor, startMenuBgColor = colors.black, colors.white
+    contextMenuTextColor, contextMenuBgColor = colors.black, colors.white
+    contextMenuClickTextColor, contextMenuClickBgColor = colors.red, colors.white
 else
     menuMainTextColor, menuMainBgColor = colors.white, colors.black
     menuOtherTextColor, menuOtherBgColor = colors.black, colors.gray
     titleTextColor, titleBgColor = colors.black, colors.white
     titleCloseTextColor, titleCloseBgColor = colors.white, colors.black
-    startButtonTextColor, startButtonBgColor = colors.black, colors.white
-    startMenuTextColor, startMenuBgColor = colors.black, colors.white
+    startButtonTextColor, startButtonBgColor = colors.black, colors.gray
+    contextMenuTextColor, contextMenuBgColor = colors.black, colors.white
+    contextMenuClickTextColor, contextMenuClickBgColor = colors.gray, colors.white
 end
 
 fs.makeDir("MineOS/Texture/Desktop/"..currentUserName)
@@ -309,6 +311,30 @@ local function drawImage(term, tImage, xPos, yPos, width, height)
     end
 end
 
+local function copy(tab)
+    if type(tab) == "table" then
+        local return_table = {}
+        for key, value in pairs(tab) do
+            if type(value) == "table" then
+                return_table[key] = copy(value)
+            else
+                return_table[key] = value
+            end
+        end
+        return return_table
+    end
+end
+
+local function shallowcopy(tab)
+    if type(tab) == "table" then
+        local return_table = {}
+        for key, value in pairs(tab) do
+            return_table[key] = value
+        end
+        return return_table
+    end
+end
+
 local function reindex(oldTable)
     local function length(table)
         local length = 0
@@ -329,29 +355,84 @@ local function reindex(oldTable)
     return newTable
 end
 
+local function openContextMenu(items, posX, posY, title)
+    local width, height = 8, #items
+    
+    for i = 1, #items do
+        if #items[i].name > width then
+            width = #items[i].name
+        end
+    end
+    
+    local offX, offY = math.ceil((w/2) - (width/2)),math.ceil((h/2) - (height/2))
+	
+	if posX and posY then
+		if posX >= w - width + 1 then
+			offX = w - width + 1
+		else
+			offX = posX
+		end
+		if posY >= h - height + 1 then
+			offY = h - height + 1
+		else
+			offY = posY
+		end
+	end
+    
+    local index = #tContextMenus + 1
+    tContextMenus[index] = {items = items, ofsX = offX, ofsY = offY, width = width + 2, title = title, childMenus = {}}
+    
+    return tContextMenus[index]
+end
+
 local function drawContextMenus()
     for i = 1, #tContextMenus do
         local tContextMenu = tContextMenus[i].items
         local ofsX = tContextMenus[i].ofsX
         local ofsY = tContextMenus[i].ofsY
         local width = tContextMenus[i].width
+        local title = tContextMenus[i].title
+        local childMenus = tContextMenus[i].childMenus
+        if title then
+            parentTerm.setCursorPos(ofsX, ofsY)
+            parentTerm.setBackgroundColor(titleBgColor)
+            parentTerm.setTextColor(titleTextColor)
+            parentTerm.write(" ")
+            parentTerm.write(title)
+            for j = 1, width - #title - 1 do
+                parentTerm.write(" ")
+            end
+            ofsY = ofsY + 1
+        end
         for j = 1, #tContextMenu do
-            parentTerm.setBackgroundColor(startMenuBgColor)
-            parentTerm.setTextColor(startMenuTextColor)
+            parentTerm.setTextColor(contextMenuTextColor)
+            parentTerm.setBackgroundColor(contextMenuBgColor)
+            
+            --if #childMenus > 0 then
+            --    parentTerm.setTextColor(contextMenuClickTextColor)
+            --    parentTerm.setBackgroundColor(contextMenuClickBgColor)
+            --end
+            
             parentTerm.setCursorPos(ofsX, ofsY + j - 1)
             parentTerm.write(tContextMenu[j].name)
             for i = 1, width - #tContextMenu[j].name do
                 parentTerm.write(" ")
             end
-            if j > i then
+            if type(tContextMenu[j].command) == "table" then
+                parentTerm.setCursorPos(ofsX + width - 1, ofsY + j - 1)
+                parentTerm.write(">")
+            end
+            if j > 1 or title then
                 parentTerm.setBackgroundColor(colors.black)
                 parentTerm.write(" ")
             end
         end
-        parentTerm.setBackgroundColor(colors.black)
-        parentTerm.setCursorPos(ofsX + 1, ofsY + #tContextMenu)
-        for j = 1, width do
-            parentTerm.write(" ")
+        if not tContextMenus[i].hideBottomShadow then
+            parentTerm.setBackgroundColor(colors.black)
+            parentTerm.setCursorPos(ofsX + 1, ofsY + #tContextMenu)
+            for j = 1, width do
+                parentTerm.write(" ")
+            end
         end
     end
 end
@@ -376,6 +457,16 @@ local function doDebugPrint(...)
     parentTerm.setCursorPos(1, 1)
 end
 
+local function indexOf(t, object)
+    if type(t) ~= "table" then error("table expected, got " .. type(t), 2) end
+
+    for i, v in pairs(t) do
+        if object == v then
+            return i
+        end
+    end
+end
+
 local function doContextMenuClick(button, x, y)
     if #tContextMenus == 0 then return false end
     if button ~= 1 then
@@ -383,34 +474,54 @@ local function doContextMenuClick(button, x, y)
         return false
     end
     local continueLoop = true
-    for j = #tContextMenus, 1 do
+    local clearMenus = true
+    for j = #tContextMenus, 1, -1 do
         local tContextMenu = tContextMenus[j].items
         local ofsX = tContextMenus[j].ofsX
         local ofsY = tContextMenus[j].ofsY
         local width = tContextMenus[j].width
+        local title = tContextMenus[j].title
+        local childMenus = tContextMenus[j].childMenus
+        if title then
+            ofsY = ofsY + 1
+        end
+        local removeMenu = false
         if x >= ofsX and x < ofsX + width and y >= ofsY and y < ofsY + #tContextMenu then
-            bStartMenuOpen = false
+            clearMenus = false
+            local childMenus2 = shallowcopy(childMenus)
+            for k = 1, #childMenus2 do
+                local index = indexOf(tContextMenus, childMenus2[k])
+                tContextMenus[index] = {}
+            end
+            if #childMenus > 0 then
+                tContextMenus[j].childMenus = {}
+            end
+            tContextMenus = reindex(tContextMenus)
+            
             for i = 1, #tContextMenu do
                 if y == ofsY + i - 1 then
-                    if tContextMenu[i].command ~= nil and not (type(tContextMenu[i].command) == "table" and #tContextMenu[i].command == 0) then
+                    if tContextMenu[i].command ~= nil and not ((type(tContextMenu[i].command) == "table" or type(tContextMenu[i].command) == "string") and #tContextMenu[i].command == 0) then
                         parentTerm.setCursorBlink(false)
-                        parentTerm.setBackgroundColor(startMenuTextColor)
-                        parentTerm.setTextColor(startMenuBgColor)
+                        parentTerm.setTextColor(contextMenuClickTextColor)
+                        parentTerm.setBackgroundColor(contextMenuClickBgColor)
                         parentTerm.setCursorPos(ofsX, ofsY + i - 1)
                         parentTerm.write(tContextMenu[i].name)
                         for i = 1, width - #tContextMenu[i].name do
                             parentTerm.write(" ")
                         end
                         --os.sleep(0.25)
-                        if type(tContextMenu[i].command) == "table" then
-                            if tContextMenu[i].command.doRunNative == true then
+                        removeMenu = true
+                        clearMenus = true
+                        if type(tContextMenu[i].command) == "string" then
+                            if tContextMenu[i].doRunNative == true then
                                 local oldTerm = term.current()
                                 term.redirect(parentTerm)
-                                os.run(envVars, table.unpack(tContextMenu[i].command))
+                                os.run(envVars, tContextMenu[i].command)
                                 term.redirect(oldTerm)
+                                timer = os.startTimer(nInterval)
                             else
-                                local newCommand = {table.unpack(tContextMenu[i].command)}
-                                if tContextMenu[i].command.runInShell == true then
+                                local newCommand = {tContextMenu[i].command}
+                                if tContextMenu[i].runInShell == true then
                                     newCommand = {"/rom/programs/shell", table.unpack(newCommand)}
                                 end
                                 local nTask = envVars["multishell"].launch(envVars, table.unpack(newCommand))
@@ -418,6 +529,14 @@ local function doContextMenuClick(button, x, y)
                                     envVars["multishell"].setFocus(nTask)
                                 end
                             end
+                        elseif type(tContextMenu[i].command) == "table" then
+                            if #childMenus == 0 then
+                                local menu = openContextMenu(tContextMenu[i].command, ofsX + width, ofsY + i - 1)
+                                childMenus[#childMenus + 1] = menu
+                                tContextMenus = reindex(tContextMenus)
+                            end
+                            removeMenu = false
+                            clearMenus = false
                         elseif type(tContextMenu[i].command) == "function" then
                             tContextMenu[i].command()
                         end
@@ -426,84 +545,17 @@ local function doContextMenuClick(button, x, y)
                     end
                 end
             end
-            if not continueLoop then break end
         end
+        if removeMenu then
+            tContextMenus[j] = {}
+            tContextMenus = reindex(tContextMenus)
+        end
+        if not continueLoop then break end
     end
-    --[[if retVal then
-        tContextMenus = reindex(tContextMenus)
-    end]]--
-    tContextMenus = {}
+    if clearMenus then
+        tContextMenus = {}
+    end
     return true
-end
-
-local function openContextMenu(items, posX, posY)
-    local width, height = 8, #items
-    
-    for i = 1, #items do
-        if #items[i].name > width then
-            width = #items[i].name
-        end
-    end
-    
-    local offX, offY = math.ceil((w/2) - (width/2)),math.ceil((h/2) - (height/2))
-	
-	if posX and posY then
-		if posX >= w - width + 1 then
-			offX = w - width + 1
-		else
-			offX = posX
-		end
-		if posY >= h - height + 1 then
-			offY = h - height + 1
-		else
-			offY = posY
-		end
-	end
-    
-    tContextMenus[#tContextMenus + 1] = {items = items, ofsX = offX, ofsY = offY, width = width}
-end
-
-local function drawStartMenu()
-    local ofs = h - #tStartMenu - 1
-    parentTerm.setBackgroundColor(titleBgColor)
-    parentTerm.setTextColor(titleTextColor)
-    parentTerm.setCursorPos(1, ofs)
-    if #currentUserName >= 10 then
-        parentTerm.write(" "..string.sub(currentUserName, 1, 10)..".. ")
-    else
-        parentTerm.write(" "..currentUserName)
-        for i = 1, 13 - #currentUserName do
-            parentTerm.write(" ")
-        end
-    end
-    for i = 1, #tStartMenu do
-        parentTerm.setBackgroundColor(startMenuBgColor)
-        parentTerm.setTextColor(startMenuTextColor)
-        parentTerm.setCursorPos(1, ofs + i)
-        parentTerm.write(tStartMenu[i].name)
-        for i = 1, 14 - #tStartMenu[i].name do
-            parentTerm.write(" ")
-        end
-        parentTerm.setBackgroundColor(colors.black)
-        parentTerm.write(" ")
-    end
-end
-
-local function splitStr(str, sep)
-    str = str or ""
-    local sep, fields = sep or ":", {}
-    local pattern = string.format("([^%s]+)", sep)
-    str:gsub(pattern, function(c) fields[#fields+1] = c end)
-    return fields
-end
-
-local function getPathOf(str)
-    local table1 = splitStr(str, "/")
-    local result = "/"
-    for i = 1, #table1 - 1 do
-        result = result .. table1[i] .. "/"
-    end
-    return result
 end
 
 local function loadTable(path)
@@ -514,61 +566,18 @@ local function loadTable(path)
 end
 
 local function doStartMenuClick(button, x, y)
-    local ofs = h - #tStartMenu - 1
-    
-    function openMenuItem(i)
-        if tStartMenu[i].command.doRunNative == true then
-            local oldTerm = term.current()
-            term.redirect(parentTerm)
-            os.run(envVars, table.unpack(tStartMenu[i].command))
-            term.redirect(oldTerm)
-        else
-            local newCommand = {table.unpack(tStartMenu[i].command)}
-            if tStartMenu[i].command.runInShell == true then
-                newCommand = {"/rom/programs/shell", table.unpack(newCommand)}
-            end
-            local nTask = envVars["multishell"].launch(envVars, table.unpack(newCommand))
-            if nTask then
-                envVars["multishell"].setFocus(nTask)
-            end
-        end
-    end
-
-    if x >= 1 and x <= 7 and y == h and not bStartMenuOpen and button == 1 then
-        bStartMenuOpen = true
+    if x >= 1 and x <= 7 and y == h and button == 1 then
         tStartMenu = loadTable("/MineOS/Config/StartMenu")
-        return true
-    elseif not (y == ofs and x <= 14) and bStartMenuOpen then
-        bStartMenuOpen = false
+        local width = 12
         for i = 1, #tStartMenu do
-            if y == ofs + i and x <= 14 then
-                if tStartMenu[i].command == nil or #tStartMenu[i].command == 0 then
-                    bStartMenuOpen = true
-                else
-                    if button == 1 then
-                        parentTerm.setCursorBlink(false)
-                        parentTerm.setBackgroundColor(startMenuTextColor)
-                        parentTerm.setTextColor(startMenuBgColor)
-                        parentTerm.setCursorPos(1, ofs + i)
-                        parentTerm.write(tStartMenu[i].name)
-                        for j = 1, 14 - #tStartMenu[i].name do
-                            parentTerm.write(" ")
-                        end
-                        --os.sleep(0.25)
-                        openMenuItem(i)
-                    elseif button == 2 then
-                        bStartMenuOpen = true
-                        local command = {table.unpack(tStartMenu[i].command)}
-                        openContextMenu({
-                            { name = "Open", command = function()
-                                openMenuItem(i)
-                            end},
-                            { name = "View File Location", command = { "/MineOS/Programs/Explorer", "--dir", getPathOf(command[1]), runInShell = true}}
-                        }, x, y)
-                    end
-                end
+            if #tStartMenu[i].name > width then
+                width = #tStartMenu[i].name
             end
         end
+        if #currentUserName > width then
+            width = #currentUserName
+        end
+        tContextMenus[#tContextMenus + 1] = {items = tStartMenu, ofsX = 1, ofsY = h - 1 - #tStartMenu, width = width + 2, title = currentUserName, hideBottomShadow = true, childMenus = {}}
         return true
     end
     return false
@@ -805,11 +814,11 @@ while bIsRunning do
                         redrawMenu()
                     end
                 end
-            else
-                if nCurrentProcess ~= nil then
-                    selectProcess(nCurrentProcess)
-                    redrawMenu()
-                end
+            end
+            
+            if nCurrentProcess ~= nil then
+                selectProcess(nCurrentProcess)
+                redrawMenu()
             end
 
         elseif sEvent == "mouse_drag" or sEvent == "mouse_up" or sEvent == "mouse_scroll" then
@@ -873,15 +882,15 @@ while bIsRunning do
         end
     end
     
-    if nCurrentProcess == nil and ((not bStartMenuOpen and #tContextMenus == 0) or sEvent == "mouse_click") then
+    if nCurrentProcess == nil and (sEvent == "mouse_click" or #tContextMenus == 0) then
         parentTerm.setCursorBlink(false)
         drawImage(parentTerm, bgimage, 1, 1, w, h - 1)
         redrawMenu()
         timer = os.startTimer(nInterval)
     end
-    if bStartMenuOpen then
-        drawStartMenu()
-    end
+    --if bStartMenuOpen then
+    --    drawStartMenu()
+    --end
     drawClock()
     drawContextMenus()
 end

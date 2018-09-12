@@ -1,12 +1,14 @@
 {
-    {name = "CraftOS", command = {"/rom/programs/shell", runInShell = true}},
-    {name = "Explorer", command = {"/MineOS/Programs/Explorer", runInShell = true}},
-    {name = "Firewolf", command = {"/MineOS/Programs/Firewolf", runInShell = true}},
-    {name = "Sketch", command = {"/MineOS/Programs/Sketch", runInShell = true}},
-    {name = "Settings", command = {"/MineOS/Programs/Settings"}},
+    {name = "Programs", command = {
+        {name = "CraftOS", command = "/rom/programs/shell", runInShell = true},
+        {name = "Explorer", command = "/MineOS/Programs/Explorer", runInShell = true},
+        {name = "Firewolf", command = "/MineOS/Programs/Firewolf", runInShell = true},
+        {name = "Sketch", command = "/MineOS/Programs/Sketch", runInShell = true}
+    }},
+    {name = "Settings", command = "/MineOS/Programs/Settings"},
     {name = ""},
-    {name = "Run", command = {"/MineOS/bin/run", doRunNative = true}},
+    {name = "Run", command = "/MineOS/bin/run", doRunNative = true},
     {name = ""},
-    {name = "Shutdown", command = {"/MineOS/bin/shutdown", doRunNative = true}},
-    {name = "Reboot", command = {"/MineOS/bin/reboot", doRunNative = true}}
+    {name = "Shutdown", command = "/MineOS/bin/shutdown", doRunNative = true},
+    {name = "Reboot", command = "/MineOS/bin/reboot", doRunNative = true}
 }
