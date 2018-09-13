@@ -7,7 +7,7 @@
     }},
     {name = "Settings", command = "/MineOS/Programs/Settings"},
     {name = ""},
-    {name = "Run", command = "/MineOS/bin/run", doRunNative = true},
+    {name = "Run", command = "/MineOS/bin/run"},
     {name = ""},
     {name = "Shutdown", command = "/MineOS/bin/shutdown", doRunNative = true},
     {name = "Reboot", command = "/MineOS/bin/reboot", doRunNative = true}

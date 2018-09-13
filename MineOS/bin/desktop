@@ -30,6 +30,7 @@ local w,h = parentTerm.getSize()
 local tProcesses = {}
 local tStartMenu = {}
 local tContextMenus = {}
+local tWidgets = {}
 local nCurrentProcess = nil
 local nRunningProcess = nil
 local nInterval = 0.1
@@ -115,6 +116,8 @@ local function launchProcess(tProgramEnv, sProgramPath, ...)
     tProcess.terminal = tProcess.window
     tProcess.bInteracted = false
     tProcesses[nProcess] = tProcess
+    tProcess.bHideTitlebar = false
+    tProcess.tWidgets = {}
     resumeProcess(nProcess)
     return nProcess
 end
@@ -213,7 +216,7 @@ local function redrawMenu()
             end
         end
         
-        if nCurrentProcess ~= nil then
+        if nCurrentProcess ~= nil and not tProcesses[nCurrentProcess].bHideTitlebar then
             -- Draw titlebar
             parentTerm.setCursorPos(1, 1)
             parentTerm.setBackgroundColor(titleBgColor)
@@ -252,26 +255,27 @@ local function drawClock()
         parentTerm.write("0")
     end
     parentTerm.write(ftime)
-    
-    local tProcess = tProcesses[nCurrentProcess]
-    if tProcess then
-        tProcess.window.restoreCursor()
-    end
 end
 
 local function resizeWindows()
     local windowY, windowHeight
-    if bShowMenu then
-        windowY = 2
-        windowHeight = h-2
-    else
-        windowY = 2
-        windowHeight = h-1
-    end
     for n=1,#tProcesses do
         local tProcess = tProcesses[n]
         local window = tProcess.window
         local x,y = tProcess.window.getCursorPos()
+        
+        if bShowMenu and not tProcess.bHideTitlebar then
+            windowY = 2
+            windowHeight = h-2
+        else
+            if tProcess.bHideTitlebar then
+                windowY = 1
+            else
+                windowY = 2
+            end
+            windowHeight = h-1
+        end
+        
         if y > windowHeight then
             tProcess.window.scroll(y - windowHeight)
             tProcess.window.setCursorPos(x, windowHeight)
@@ -583,6 +587,33 @@ local function doStartMenuClick(button, x, y)
     return false
 end
 
+local function drawWidgets()
+    local widgets = tWidgets
+    if nCurrentProcess then widgets = tProcesses[nCurrentProcess].tWidgets end
+    for i = 1, #widgets do
+        if widgets[i].draw then
+            widgets[i].draw(parentTerm)
+        end
+    end
+end
+
+local function doWidgetClick(button, x, y)
+    local widgets = tWidgets
+    if nCurrentProcess then widgets = tProcesses[nCurrentProcess].tWidgets end
+    for i = #widgets, 1, -1 do
+        local widget = widgets[i]
+        if x >= widget.x and x < widget.x + widget.width and y >= widget.y and y <= widget.y + widget.height then
+            if type(widget.click) == "function" then
+                widget.click(button, x, y)
+            elseif type(widget.event) == "function" then
+                widget.event("mouse_click", button, x, y)
+            end
+            return true
+        end
+    end
+    return false
+end
+
 local multishell = {}
 
 function multishell.getFocus()
@@ -629,6 +660,10 @@ function multishell.getCount()
     return #tProcesses
 end
 
+function multishell.getProcess(n)
+    return tProcesses[n]
+end
+
 local function tokenise(...)
     local sLine = table.concat({...}, " ")
 	local tWords = {}
@@ -665,12 +700,356 @@ function shell.switchTab(nID)
     multishell.setFocus(nID)
 end
 
+local MineOS = {}
+
+function MineOS.addWidget(widget)
+    local widgets = tWidgets
+    if multishell.getProcess(multishell.getCurrent()) then widgets = multishell.getProcess(multishell.getCurrent()).tWidgets end
+    
+    widgets[#widgets + 1] = widget
+    
+    return widget
+end
+
+function MineOS.removeWidget(widget)
+    local widgets = tWidgets
+    if multishell.getProcess(multishell.getCurrent()) then widgets = multishell.getProcess(multishell.getCurrent()).tWidgets end
+    
+    local index = indexOf(widgets, widget)
+    if index > 0 then
+        widgets[index] = {}
+        widgets = reindex(widgets)
+        
+        if nRunningProcess then
+            multishell.getProcess(multishell.getCurrent()).tWidgets = widgets
+        else
+            tWidgets = widgets
+        end
+    end
+    
+    return {}
+end
+
+function MineOS.hideTitlebar(bool)
+    tProcesses[nRunningProcess].bHideTitlebar = bool
+    resizeWindows()
+end
+
+local dialogTitle = {txt = colors.white,back = colors.blue}
+local dialogWindow = {txt = colors.black,back = colors.white}
+local dialogInput = {txt = colors.black,back = colors.lightGray}
+
+local function printC(term,posX,posY,textCol,backCol,text)
+	term.setCursorPos(posX,posY)
+	term.setTextColor(colors[textCol] or textCol)
+	term.setBackgroundColor(colors[backCol] or backCol)
+	term.write(text)
+end
+
+function MineOS.dialogBox(title, message, options, w, h)
+    local bugTest = false
+
+	local selected = 1
+	title = title or ""
+	message = message or ""
+	options = options or {}
+	local boxW,boxH = (w or 26), (h or 3)
+	local termX,termY = term.getSize()
+	local ofsX,ofsY = math.ceil((termX/2) - (boxW/2)) , math.ceil((termY/2) - (boxH/2)) -- offset from top left
+	
+	local space = 0
+	local range = {}
+	for i = 1,#options do
+		range[i] = {s = space,f = space + string.len(options[i])}
+		space = space + string.len(options[i])+3
+	end
+	local ofC = math.ceil((boxW/2)) - math.ceil((space/2))
+    
+	local function drawBox(term)
+        term.setCursorBlink(false)
+		printC(term,ofsX,ofsY,dialogTitle.txt,dialogTitle.back," "..title..string.rep(" ",boxW-#title-2))
+		term.setBackgroundColor(colors.red)
+		term.setTextColor(colors.white)
+		term.write("X")
+		printC(term,ofsX,ofsY+1,dialogWindow.txt,dialogWindow.back,string.sub(" "..message..string.rep(" ",boxW),1,boxW))
+		term.setCursorPos(ofsX,ofsY+2)
+		term.write(string.rep(" ",boxW))
+		term.setCursorPos(ofsX,ofsY+3)
+		term.write(string.rep(" ",boxW))
+		for i = 1,#options do
+			if i == selected then
+				printC(term, range[i].s + ofC + ofsX - 1,ofsY + 3,"black","lightGray","["..options[i].."]")
+				term.setBackgroundColor(dialogWindow.back)
+				term.setTextColor(dialogWindow.txt)
+				term.write(" ")
+			else
+				term.setCursorPos(range[i].s + ofC + ofsX - 1,ofsY + 3)
+				term.write(" "..options[i].." ")
+			end
+		end
+		term.setCursorPos(ofsX + ofC + space,ofsY + 3)
+		term.write(string.rep(" ",boxW - (ofC + space)))
+		term.setBackgroundColor(colors.black)
+		term.setTextColor(colors.white)
+        
+        term.setBackgroundColor(colors.black)
+        for i = 1, boxW do
+            term.setCursorPos(ofsX + i, ofsY + boxH + 1)
+            term.write(" ")
+        end
+        for i = 1, boxH do
+            term.setCursorPos(ofsX + boxW, ofsY + i)
+            term.write(" ")
+        end
+	end
+    
+    local widget
+    widget = {draw = drawBox, x = ofsX, y = ofsY, width = boxW, height = boxH, returnResult = {}, event = function(...)
+        local event = {...}
+        if event[1] == "key" then
+			if event[2] == 203 then -- left
+				selected = selected - 1
+				if selected < 1 then
+					selected = #options
+				end
+			elseif event[2] == 205 then -- right
+				selected = selected + 1
+				if selected > #options then
+					selected = 1
+				end
+			elseif event[2] == 28 then -- enter
+				widget.returnResult = {selected, options[selected]}
+                return
+			end
+		elseif event[1] == "mouse_click" then
+			if event[2] == 1 then
+				if event[4] == ofsY + 3 then
+					for i = 1,#options do
+						if event[3] >= range[i].s + ofC + ofsX - 1 and event[3] <= range[i].f + ofC + ofsX then
+							widget.returnResult = {i, options[i]}
+                            return
+						end
+					end
+				end
+			end
+		end
+    end}
+    
+    MineOS.addWidget(widget)
+    
+    while true do
+        coroutine.yield()
+        if #widget.returnResult > 0 then
+            MineOS.removeWidget(widget)
+            return unpack(widget.returnResult)
+        end
+    end
+end
+
+function MineOS.inputBox(title)
+    local boxW,boxH = 26,3
+	local termX,termY = term.getSize()
+	local ofsX,ofsY = math.ceil((termX/2) - (boxW/2)) , math.ceil((termY/2) - (boxH/2)) -- offset from top left
+	local options = {"OK","Cancel"}
+	
+	local selected = 1
+	local space = 0
+	local range = {}
+	for i = 1,#options do
+		range[i] = {s = space,f = space + string.len(options[i])}
+		space = space + string.len(options[i])+3
+	end
+	local ofC = (boxW/2) - (space/2)
+    local widget
+    
+    local _wdth = boxW - 4
+    
+    local sLine = ""
+	term.setCursorBlink(true)
+
+	local nHistoryPos = nil
+	local nPos = 0
+    if _sReplaceChar then
+		_sReplaceChar = string.sub(_sReplaceChar, 1, 1)
+	end
+	
+	local sx, sy = ofsX+2, ofsY+2
+
+	local w, h = term.getSize()
+	if _wdth and type(_wdth) == "number" then
+		w = sx + _wdth - 1
+	end
+	
+	local function redraw(term, _sCustomReplaceChar)
+		local nScroll = 0
+		if sx + nPos >= w then
+			nScroll = (sx + nPos) - w
+		end
+			
+		term.setCursorPos(sx + _wdth - 1, sy)
+		term.write(" ")
+		term.setCursorPos(sx, sy)
+		local sReplace = _sCustomReplaceChar or _sReplaceChar
+		if sReplace then
+			term.write(string.rep(sReplace,_wdth))
+		else
+			term.write(string.sub(sLine.."_", nScroll + 1 ,nScroll + _wdth))
+		end
+		term.setCursorPos(sx + nPos - nScroll, sy)
+	end
+	
+	local function drawBox(term)
+        term.setCursorBlink(false)
+		printC(term,ofsX,ofsY,dialogTitle.txt,dialogTitle.back,string.rep(" ",boxW))
+		printC(term,ofsX+1,ofsY,dialogTitle.txt,dialogTitle.back,(title or "User Input"))
+		printC(term,ofsX,ofsY+1,dialogWindow.txt,dialogWindow.back,string.rep(" ",boxW))
+		printC(term,ofsX,ofsY+2,dialogWindow.txt,dialogWindow.back,string.rep(" ",boxW))
+		printC(term,ofsX,ofsY+3,dialogWindow.txt,dialogWindow.back,string.rep(" ",boxW))
+		
+		for i = 1,#options do
+			if i == selected then
+				term.setBackgroundColor(dialogInput.back)
+				term.setCursorPos(range[i].s + ofC + ofsX - 1,ofsY + 3)
+				term.write("["..options[i].."]")
+				term.setBackgroundColor(dialogWindow.back)
+				term.write(" ")
+			else
+				term.setCursorPos(range[i].s + ofC + ofsX - 1,ofsY + 3)
+				term.write(" "..options[i].." ")
+			end
+		end
+        
+        term.setBackgroundColor(colors.black)
+        for i = 1, boxW do
+            term.setCursorPos(ofsX + i, ofsY + boxH + 1)
+            term.write(" ")
+        end
+        for i = 1, boxH do
+            term.setCursorPos(ofsX + boxW, ofsY + i)
+            term.write(" ")
+        end
+		
+		printC(term,ofsX+2,ofsY+2,dialogInput.txt,dialogInput.back,string.rep(" ",boxW-4))
+        redraw(term)
+        term.setCursorBlink(false)
+	end
+    
+    widget = {draw = drawBox, x = ofsX, y = ofsY, width = boxW, height = boxH, returnResult = {}, event = function(...)
+        local event = {...}
+        local param = event[2]
+        if event[1] == "char" then
+            sLine = string.sub(sLine, 1, nPos) .. param .. string.sub(sLine, nPos + 1)
+			nPos = nPos + 1
+			--redraw()
+            
+        elseif event[1] == "key" then
+            if param == keys.enter then
+                term.setCursorBlink(false)
+                widget.returnResult = {sLine}
+                return
+			elseif param == keys.left then
+				-- Left
+				if nPos > 0 then
+					nPos = nPos - 1
+					--redraw()
+				end
+				
+			elseif param == keys.right then
+				-- Right				
+				if nPos < string.len(sLine) then
+					nPos = nPos + 1
+					--redraw()
+				end
+			
+			elseif param == keys.up or param == keys.down then
+                -- Up or down
+				if _tHistory then
+					--redraw(" ");
+					if param == keys.up then
+						-- Up
+						if nHistoryPos == nil then
+							if #_tHistory > 0 then
+								nHistoryPos = #_tHistory
+							end
+						elseif nHistoryPos > 1 then
+							nHistoryPos = nHistoryPos - 1
+						end
+					else
+						-- Down
+						if nHistoryPos == #_tHistory then
+							nHistoryPos = nil
+						elseif nHistoryPos ~= nil then
+							nHistoryPos = nHistoryPos + 1
+						end						
+					end
+					
+					if nHistoryPos then
+                    	sLine = _tHistory[nHistoryPos]
+                    	nPos = string.len(sLine) 
+                    else
+						sLine = ""
+						nPos = 0
+					end
+					--redraw()
+                end
+			elseif param == keys.backspace then
+				-- Backspace
+				if nPos > 0 then
+					--redraw(" ");
+					sLine = string.sub(sLine, 1, nPos - 1) .. string.sub(sLine, nPos + 1)
+					nPos = nPos - 1					
+					--redraw()
+				end
+			elseif param == keys.home then
+				-- Home
+				nPos = 0
+				--redraw()		
+			elseif param == keys.delete then
+				if nPos < string.len(sLine) then
+					redraw(" ");
+					sLine = string.sub(sLine, 1, nPos) .. string.sub(sLine, nPos + 2)				
+					--redraw()
+				end
+			elseif param == keys["end"] then
+				-- End
+				nPos = string.len(sLine)
+				--redraw()
+			end
+		elseif event[1] == "mouse_click" then
+			if event[4] == ofsY + 3 then
+				for i = 1,#options do
+					if event[3] >= range[i].s + ofC + ofsX - 1 and event[3] <= range[i].f + ofC + ofsX then
+						if options[i] == "OK" then
+                            widget.returnResult = {sLine}
+                            return
+						elseif options[i] == "Cancel" then
+							widget.returnResult = {false}
+                            return
+						end
+					end
+				end
+			end
+		end
+    end}
+    
+    MineOS.addWidget(widget)
+    
+    while true do
+        coroutine.yield()
+        if #widget.returnResult > 0 then
+            MineOS.removeWidget(widget)
+            return unpack(widget.returnResult)
+        end
+    end
+end
+
 -- Begin
 
 envVars = {
     ["shell"] = shell,
     ["multishell"] = multishell,
-    ["currentUserName"] = currentUserName
+    ["currentUserName"] = currentUserName,
+    ["MineOS"] = MineOS
 }
 
 parentTerm.clear()
@@ -681,15 +1060,15 @@ redrawMenu()
 
 timer = os.startTimer(0)
 
+drawImage(parentTerm, bgimage, 1, 1, w, h - 1)
+
 -- Run processes
 while bIsRunning do
+    local bRedrawBackground = false
+
     -- Get the event
     local tEventData = {os.pullEventRaw()}
     local sEvent = tEventData[1]
-    
-    if sEvent == "timer" and tEventData[2] == timer then
-        timer = os.startTimer(nInterval)
-    end
     
     if #tProcesses > 0 then
         if sEvent == "term_resize" then
@@ -697,15 +1076,29 @@ while bIsRunning do
             w,h = parentTerm.getSize()
             resizeWindows()
             redrawMenu()
+            drawWidgets()
+            bRedrawBackground = true
 
         elseif (sEvent == "char" or sEvent == "key" or sEvent == "key_up" or sEvent == "paste" or sEvent == "terminate") and nCurrentProcess ~= nil then
             -- Keyboard event
-            -- Passthrough to current process
-            resumeProcess(nCurrentProcess, table.unpack(tEventData))
-            if cullProcess(nCurrentProcess) then
-                --setMenuVisible(#tProcesses >= 2)
-                redrawMenu()
+            local widgets = tWidgets
+            if nCurrentProcess then widgets = tProcesses[nCurrentProcess].tWidgets end
+            if #widgets > 0 then
+                if widgets[#widgets].keyEvent then
+                    widgets[#widgets].keyEvent(unpack(tEventData))
+                elseif widgets[#widgets].event then
+                    widgets[#widgets].event(unpack(tEventData))
+                end
+            else
+                -- Passthrough to current process
+                resumeProcess(nCurrentProcess, table.unpack(tEventData))
+                if cullProcess(nCurrentProcess) then
+                    --setMenuVisible(#tProcesses >= 2)
+                    redrawMenu()
+                end
+                bRedrawBackground = true
             end
+            
 
         elseif sEvent == "mouse_click" then
             -- Click event
@@ -714,6 +1107,9 @@ while bIsRunning do
             local doMenuUpdate = doContextMenuClick(button, x, y)
             if not doMenuUpdate then
                 doMenuUpdate = doStartMenuClick(button, x, y)
+            end
+            if not doMenuUpdate then
+                doMenuUpdate = doWidgetClick(button, x, y)
             end
             if not doMenuUpdate then
                 if bShowMenu and y == h then
@@ -820,6 +1216,8 @@ while bIsRunning do
                 selectProcess(nCurrentProcess)
                 redrawMenu()
             end
+            
+            bRedrawBackground = true
 
         elseif sEvent == "mouse_drag" or sEvent == "mouse_up" or sEvent == "mouse_scroll" then
             -- Other mouse event
@@ -831,7 +1229,9 @@ while bIsRunning do
                     --setMenuVisible(#tProcesses >= 2)
                     redrawMenu()
                 end
+                
             end
+            bRedrawBackground = true
 
         else
             -- Other event
@@ -844,6 +1244,8 @@ while bIsRunning do
                 --setMenuVisible(#tProcesses >= 2)
                 redrawMenu()
             end
+            
+            bRedrawBackground = true
         end
 
         if bWindowsResized then
@@ -857,11 +1259,27 @@ while bIsRunning do
                 --setMenuVisible(#tProcesses >= 2)
                 redrawMenu()
             end
+            
+            bRedrawBackground = true
         end
     else
         if sEvent == "term_resize" then
             -- Resize event
             w,h = parentTerm.getSize()
+            
+        
+        elseif (sEvent == "char" or sEvent == "key" or sEvent == "key_up" or sEvent == "paste" or sEvent == "terminate") and nCurrentProcess ~= nil then
+            -- Keyboard event
+            local widgets = tWidgets
+            if nCurrentProcess then widgets = tProcesses[nCurrentProcess].tWidgets end
+            if #widgets > 0 then
+                if widgets[#widgets].keyEvent then
+                    widgets[#widgets].keyEvent(unpack(tEventData))
+                elseif widgets[#widgets].event then
+                    widgets[#widgets].event(unpack(tEventData))
+                end
+            end
+            bRedrawBackground = true
 
         elseif sEvent == "mouse_click" then
             -- Click event
@@ -869,6 +1287,9 @@ while bIsRunning do
             local doMenuUpdate = doContextMenuClick(button, x, y)
             if not doMenuUpdate then
                 doMenuUpdate = doStartMenuClick(button, x, y)
+            end
+            if not doMenuUpdate then
+                doMenuUpdate = doWidgetClick(button, x, y)
             end
             if not doMenuUpdate then
                 --[[if button == 2 then
@@ -879,20 +1300,38 @@ while bIsRunning do
                     }, x, y)
                 end]]--
             end
+            bRedrawBackground = true
         end
     end
     
-    if nCurrentProcess == nil and (sEvent == "mouse_click" or #tContextMenus == 0) then
+    if sEvent == "timer" and not bRedrawBackground then
+        if tEventData[2] == timer then
+            timer = os.startTimer(nInterval)
+        end
+    elseif string.find(sEvent, "key") or string.find(sEvent, "mouse") or string.find(sEvent, "char") then
         parentTerm.setCursorBlink(false)
-        drawImage(parentTerm, bgimage, 1, 1, w, h - 1)
+        if nCurrentProcess == nil then
+            drawImage(parentTerm, bgimage, 1, 1, w, h - 1)
+        end
         redrawMenu()
-        timer = os.startTimer(nInterval)
+        drawWidgets()
+        --timer = os.startTimer(nInterval)
     end
-    --if bStartMenuOpen then
-    --    drawStartMenu()
-    --end
+    
     drawClock()
     drawContextMenus()
+    
+    --parentTerm.setBackgroundColor(colors.yellow)
+    --parentTerm.setTextColor(colors.black)
+    --parentTerm.setCursorPos(w - 7 - #sEvent, h)
+    --parentTerm.write(" " .. sEvent .. " ")
+    
+    local tProcess = tProcesses[nCurrentProcess]
+    if tProcess then
+        tProcess.window.restoreCursor()
+    end
+    
+    timer = os.startTimer(nInterval)
 end
 
 -- Shutdown
